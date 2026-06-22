@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>cyk-media-manager</title>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #1a1a1a; color: #eee; padding: 16px; }
+    h1 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: #aaa; }
+
+    .toolbar {
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+      background: #2a2a2a; padding: 12px; border-radius: 8px; margin-bottom: 16px;
+    }
+    .toolbar input[type="text"] {
+      background: #3a3a3a; border: 1px solid #444; color: #eee;
+      padding: 6px 10px; border-radius: 4px; font-size: 13px;
+    }
+    .toolbar input[type="text"]:focus { outline: none; border-color: #666; }
+    #dirInput { width: 280px; }
+    #prefixInput { width: 120px; }
+    #digitsInput, #startInput, #stepInput { width: 60px; }
+    .toolbar label { font-size: 12px; color: #888; margin-right: 2px; }
+    .toolbar button {
+      padding: 6px 14px; border: none; border-radius: 4px;
+      font-size: 13px; cursor: pointer; font-weight: 500;
+    }
+    #loadBtn { background: #444; color: #eee; }
+    #loadBtn:hover { background: #555; }
+    #renameBtn { background: #4a7cf7; color: #fff; }
+    #renameBtn:hover { background: #3a6ce7; }
+    #renameBtn:disabled { background: #333; color: #666; cursor: not-allowed; }
+
+    #status { font-size: 12px; color: #888; margin-left: 4px; }
+
+    #grid {
+      display: flex; flex-wrap: wrap; gap: 10px;
+    }
+    .thumb {
+      width: 140px; cursor: grab; background: #2a2a2a;
+      border-radius: 6px; overflow: hidden; border: 2px solid transparent;
+      user-select: none;
+    }
+    .thumb:active { cursor: grabbing; }
+    .thumb.sortable-chosen { border-color: #4a7cf7; opacity: 0.9; }
+    .thumb.sortable-ghost { opacity: 0.3; }
+    .thumb img {
+      width: 100%; height: 110px; object-fit: cover; display: block;
+      pointer-events: none;
+    }
+    .thumb .label {
+      font-size: 10px; color: #888; padding: 4px 6px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+  </style>
+</head>
+<body>
+  <h1>cyk-media-manager</h1>
+
+  <div class="toolbar">
+    <label>フォルダ</label>
+    <input type="text" id="dirInput" placeholder="/path/to/folder">
+    <button id="loadBtn">読み込み</button>
+
+    <label>プレフィックス</label>
+    <input type="text" id="prefixInput" placeholder="img">
+
+    <label>桁数</label>
+    <input type="text" id="digitsInput" value="3">
+
+    <label>開始番号</label>
+    <input type="text" id="startInput" value="1">
+
+    <label>スキップ</label>
+    <input type="text" id="stepInput" value="1">
+
+    <button id="renameBtn" disabled>リネーム実行</button>
+    <span id="status"></span>
+  </div>
+
+  <div id="grid"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

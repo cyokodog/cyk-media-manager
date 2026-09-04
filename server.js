@@ -10,6 +10,25 @@ app.use(express.static('public'))
 
 const IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif']
 
+// 作成日時・更新日時・サイズを返す。
+// birthtime を取得できないファイルシステム（古い ext4 など）では 0 や
+// mtime より後の値が返るため、その場合は mtime にフォールバックする。
+function fileTimes(filePath) {
+  try {
+    const st = fs.statSync(filePath)
+    const usable = st.birthtimeMs > 0 && st.birthtimeMs <= st.mtimeMs
+    const birthtime = usable ? st.birthtime : st.mtime
+    return {
+      birthtime: birthtime.toISOString(),
+      mtime: st.mtime.toISOString(),
+      size: st.size
+    }
+  } catch {
+    // 一覧取得後に削除された場合など。一覧からは落とさず日時のみ null にする
+    return { birthtime: null, mtime: null, size: null }
+  }
+}
+
 app.get('/api/images', (req, res) => {
   const dir = req.query.dir
   if (!dir) return res.status(400).json({ error: 'dir is required' })
@@ -20,7 +39,10 @@ app.get('/api/images', (req, res) => {
   const files = fs.readdirSync(absDir)
     .filter(f => IMAGE_EXTS.includes(path.extname(f).toLowerCase()))
     .sort()
-    .map(f => ({ name: f, path: path.join(absDir, f) }))
+    .map(f => {
+      const filePath = path.join(absDir, f)
+      return { name: f, path: filePath, ...fileTimes(filePath) }
+    })
 
   res.json({ dir: absDir, files })
 })

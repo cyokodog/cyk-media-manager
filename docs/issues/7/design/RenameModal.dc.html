@@ -1,0 +1,192 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: system-ui, sans-serif; background: #1a1a1a; color: #eee; }
+    a { color: #4a7cf7; } a:hover { color: #3a6ce7; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  </style>
+</helmet>
+
+<div style="width: 1100px; padding: 24px; background: #141414; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px;">
+
+  <div style="display: flex; flex-direction: column; gap: 4px;">
+    <div style="font-size: 15px; font-weight: 600; color: #eee;">リネーム確認モーダル</div>
+    <div style="font-size: 12px; color: #777; line-height: 1.6;">リネームは破壊的操作であり、フォルダ内の一部だけを対象とする。実行前に対象外ファイルを含む名前衝突を検査し、衝突があれば実行させない。</div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start;">
+
+    <!-- 正常系 -->
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="font-size: 11px; color: #666; letter-spacing: 0.06em; text-transform: uppercase;">衝突なし — 実行できる</div>
+      <div style="background: #212121; border: 1px solid #383838; border-radius: 8px; overflow: hidden; box-shadow: 0 16px 40px rgba(0,0,0,0.55);">
+
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #333;">
+          <div style="display: flex; flex-direction: column; gap: 3px;">
+            <div style="font-size: 14px; font-weight: 600; color: #eee;">リネームの確認</div>
+            <div style="font-size: 11px; color: #777;">6 件を変更します</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 4px; cursor: pointer;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px; padding: 9px 16px; background: #1c2436; border-bottom: 1px solid #2c3648;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8fa6d8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <div class="mono" style="font-size: 11px; color: #8fa6d8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">/Users/cyokodog/Pictures/2026-flowers</div>
+        </div>
+
+        <div style="display: flex; padding: 7px 16px; background: #1e1e1e; border-bottom: 1px solid #2f2f2f;">
+          <div style="flex: 1; font-size: 10px; color: #666; letter-spacing: 0.04em;">変更前</div>
+          <div style="width: 22px;"></div>
+          <div style="flex: 1; font-size: 10px; color: #666; letter-spacing: 0.04em;">変更後</div>
+        </div>
+
+        <div style="max-height: 260px; overflow-y: auto;">
+          <div style="display: flex; align-items: center; padding: 8px 16px; border-bottom: 1px solid #2a2a2a;">
+            <div class="mono" style="flex: 1; font-size: 11px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">IMG_4473.jpg</div>
+            <div style="width: 22px; display: flex; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+            <div class="mono" style="flex: 1; font-size: 11px; color: #dfe6f7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">花_ひまわり_<span style="color: #4a7cf7; font-weight: 700;">0010</span>.jpg</div>
+          </div>
+          <div style="display: flex; align-items: center; padding: 8px 16px; border-bottom: 1px solid #2a2a2a;">
+            <div class="mono" style="flex: 1; font-size: 11px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">IMG_4475.jpg</div>
+            <div style="width: 22px; display: flex; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+            <div class="mono" style="flex: 1; font-size: 11px; color: #dfe6f7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">花_ひまわり_<span style="color: #4a7cf7; font-weight: 700;">0020</span>.jpg</div>
+          </div>
+          <div style="display: flex; align-items: center; padding: 8px 16px; border-bottom: 1px solid #2a2a2a;">
+            <div class="mono" style="flex: 1; font-size: 11px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">IMG_4474.jpg</div>
+            <div style="width: 22px; display: flex; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+            <div class="mono" style="flex: 1; font-size: 11px; color: #dfe6f7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">花_ひまわり_<span style="color: #4a7cf7; font-weight: 700;">0030</span>.jpg</div>
+          </div>
+          <div style="display: flex; align-items: center; padding: 8px 16px; border-bottom: 1px solid #2a2a2a;">
+            <div class="mono" style="flex: 1; font-size: 11px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">IMG_4477.JPG</div>
+            <div style="width: 22px; display: flex; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+            <div class="mono" style="flex: 1; font-size: 11px; color: #dfe6f7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">花_ひまわり_<span style="color: #4a7cf7; font-weight: 700;">0040</span>.jpg</div>
+          </div>
+          <div style="display: flex; align-items: center; padding: 8px 16px; border-bottom: 1px solid #2a2a2a;">
+            <div class="mono" style="flex: 1; font-size: 11px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">IMG_4476.jpg</div>
+            <div style="width: 22px; display: flex; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+            <div class="mono" style="flex: 1; font-size: 11px; color: #dfe6f7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">花_ひまわり_<span style="color: #4a7cf7; font-weight: 700;">0050</span>.jpg</div>
+          </div>
+          <div style="display: flex; align-items: center; padding: 8px 16px;">
+            <div class="mono" style="flex: 1; font-size: 11px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">IMG_4478.jpg</div>
+            <div style="width: 22px; display: flex; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+            <div class="mono" style="flex: 1; font-size: 11px; color: #dfe6f7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">花_ひまわり_<span style="color: #4a7cf7; font-weight: 700;">0060</span>.jpg</div>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; background: #1e1e1e; border-top: 1px solid #333;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5bbd7a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 12.5l2.5 2.5 4.5-5"/></svg>
+            <div style="font-size: 11px; color: #8fbf9c;">名前の衝突はありません</div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button style="height: 32px; padding: 0 14px; background: transparent; border: 1px solid #444; border-radius: 4px; color: #aaa; font-size: 13px; font-family: inherit; cursor: pointer;">キャンセル</button>
+            <button style="height: 32px; padding: 0 20px; background: #4a7cf7; border: none; border-radius: 4px; color: #fff; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer;">実行</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 衝突あり -->
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="font-size: 11px; color: #666; letter-spacing: 0.06em; text-transform: uppercase;">衝突あり — 実行させない</div>
+      <div style="background: #212121; border: 1px solid #5c3a3a; border-radius: 8px; overflow: hidden; box-shadow: 0 16px 40px rgba(0,0,0,0.55);">
+
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #333;">
+          <div style="display: flex; flex-direction: column; gap: 3px;">
+            <div style="font-size: 14px; font-weight: 600; color: #eee;">リネームの確認</div>
+            <div style="font-size: 11px; color: #777;">6 件を変更します</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 4px; cursor: pointer;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: flex-start; gap: 9px; padding: 12px 16px; background: #33201f; border-bottom: 1px solid #5c3a3a;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e0705f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;"><path d="M12 3 2 20h20z"/><path d="M12 9v5M12 17.5v.5"/></svg>
+          <div style="display: flex; flex-direction: column; gap: 4px;">
+            <div style="font-size: 12px; color: #f0a89c; font-weight: 600;">2 件が既存のファイルと衝突します</div>
+            <div style="font-size: 11px; color: #c99287; line-height: 1.6;">リネーム対象に含めていないファイルと同じ名前になります。開始番号を変更すると回避できます。</div>
+          </div>
+        </div>
+
+        <div style="display: flex; padding: 7px 16px; background: #1e1e1e; border-bottom: 1px solid #2f2f2f;">
+          <div style="flex: 1; font-size: 10px; color: #666; letter-spacing: 0.04em;">変更前</div>
+          <div style="width: 22px;"></div>
+          <div style="flex: 1; font-size: 10px; color: #666; letter-spacing: 0.04em;">変更後</div>
+        </div>
+
+        <div style="max-height: 260px; overflow-y: auto;">
+          <div style="display: flex; align-items: center; padding: 8px 16px; border-bottom: 1px solid #2a2a2a; background: #2b1d1c; border-left: 2px solid #e0705f;">
+            <div class="mono" style="flex: 1; font-size: 11px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">IMG_4473.jpg</div>
+            <div style="width: 22px; display: flex; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#e0705f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+            <div style="flex: 1; display: flex; align-items: center; gap: 5px; min-width: 0;">
+              <div class="mono" style="font-size: 11px; color: #f0a89c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">花_ひまわり_<span style="font-weight: 700;">0010</span>.jpg</div>
+              <div style="font-size: 9px; color: #e0705f; border: 1px solid #6b3f3a; border-radius: 3px; padding: 1px 4px; flex-shrink: 0;">既存</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; padding: 8px 16px; border-bottom: 1px solid #2a2a2a;">
+            <div class="mono" style="flex: 1; font-size: 11px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">IMG_4475.jpg</div>
+            <div style="width: 22px; display: flex; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+            <div class="mono" style="flex: 1; font-size: 11px; color: #dfe6f7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">花_ひまわり_<span style="color: #4a7cf7; font-weight: 700;">0020</span>.jpg</div>
+          </div>
+          <div style="display: flex; align-items: center; padding: 8px 16px; border-bottom: 1px solid #2a2a2a; background: #2b1d1c; border-left: 2px solid #e0705f;">
+            <div class="mono" style="flex: 1; font-size: 11px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">IMG_4474.jpg</div>
+            <div style="width: 22px; display: flex; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#e0705f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+            <div style="flex: 1; display: flex; align-items: center; gap: 5px; min-width: 0;">
+              <div class="mono" style="font-size: 11px; color: #f0a89c; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">花_ひまわり_<span style="font-weight: 700;">0030</span>.jpg</div>
+              <div style="font-size: 9px; color: #e0705f; border: 1px solid #6b3f3a; border-radius: 3px; padding: 1px 4px; flex-shrink: 0;">既存</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; padding: 8px 16px; border-bottom: 1px solid #2a2a2a;">
+            <div class="mono" style="flex: 1; font-size: 11px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">IMG_4477.JPG</div>
+            <div style="width: 22px; display: flex; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+            <div class="mono" style="flex: 1; font-size: 11px; color: #dfe6f7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">花_ひまわり_<span style="color: #4a7cf7; font-weight: 700;">0040</span>.jpg</div>
+          </div>
+          <div style="display: flex; align-items: center; padding: 8px 16px; border-bottom: 1px solid #2a2a2a;">
+            <div class="mono" style="flex: 1; font-size: 11px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">IMG_4476.jpg</div>
+            <div style="width: 22px; display: flex; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+            <div class="mono" style="flex: 1; font-size: 11px; color: #dfe6f7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">花_ひまわり_<span style="color: #4a7cf7; font-weight: 700;">0050</span>.jpg</div>
+          </div>
+          <div style="display: flex; align-items: center; padding: 8px 16px;">
+            <div class="mono" style="flex: 1; font-size: 11px; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">IMG_4478.jpg</div>
+            <div style="width: 22px; display: flex; justify-content: center;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+            <div class="mono" style="flex: 1; font-size: 11px; color: #dfe6f7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">花_ひまわり_<span style="color: #4a7cf7; font-weight: 700;">0060</span>.jpg</div>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; background: #1e1e1e; border-top: 1px solid #333;">
+          <div style="display: flex; align-items: center; gap: 7px;">
+            <div style="font-size: 11px; color: #888;">開始番号</div>
+            <div style="display: flex; align-items: center; justify-content: center; background: #3a3a3a; border: 1px solid #4a7cf7; border-radius: 4px; height: 28px; width: 58px; font-size: 12px; color: #eee;">10</div>
+            <div style="font-size: 11px; color: #666;">を変更して回避</div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button style="height: 32px; padding: 0 14px; background: transparent; border: 1px solid #444; border-radius: 4px; color: #aaa; font-size: 13px; font-family: inherit; cursor: pointer;">キャンセル</button>
+            <button style="height: 32px; padding: 0 20px; background: #333; border: none; border-radius: 4px; color: #666; font-size: 13px; font-weight: 500; font-family: inherit;">実行</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: flex-start; gap: 8px; padding: 12px 14px; background: #1e1e1e; border: 1px solid #2f2f2f; border-radius: 6px;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.5"/></svg>
+    <div style="font-size: 11px; color: #777; line-height: 1.7;">
+      拡張子は小文字化される（<span class="mono" style="color: #999;">IMG_4477.JPG</span> &rarr; <span class="mono" style="color: #999;">花_ひまわり_0040.jpg</span>）。既存の挙動を維持する。<br>
+      衝突が 1 件でもあるとき実行ボタンは無効。スキップや上書きの選択肢は出さず、ユーザーが開始番号を変えて回避する。
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

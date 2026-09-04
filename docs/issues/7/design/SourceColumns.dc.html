@@ -1,0 +1,159 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: system-ui, sans-serif; background: #1a1a1a; color: #eee; }
+    a { color: #4a7cf7; } a:hover { color: #3a6ce7; }
+  </style>
+</helmet>
+
+<div style="width: 900px; padding: 24px; background: #1a1a1a; box-sizing: border-box; display: flex; flex-direction: column; gap: 26px;">
+
+  <div style="display: flex; flex-direction: column; gap: 4px;">
+    <div style="font-size: 15px; font-weight: 600; color: #eee;">左列・右列（ソース）</div>
+    <div style="font-size: 12px; color: #777; line-height: 1.6;">同一のファイル集合を別の並び順で見せる読み取り専用のプール。中央列への投入はコピーで、ソース側のファイルは消えない。</div>
+  </div>
+
+  <!-- 列ヘッダーの2種 -->
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 11px; color: #666; letter-spacing: 0.06em; text-transform: uppercase;">列ヘッダー</div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+      <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 6px; overflow: hidden;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #222; border-bottom: 1px solid #333;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+            <div style="font-size: 12px; color: #aaa; font-weight: 500;">作成日順</div>
+          </div>
+          <button style="display: flex; align-items: center; gap: 4px; height: 22px; padding: 0 7px; background: #333; border: 1px solid #444; border-radius: 4px; color: #888; font-size: 11px; font-family: inherit; cursor: pointer;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 11l6-6 6 6"/></svg>
+            昇順
+          </button>
+        </div>
+        <div style="padding: 7px 12px; font-size: 11px; color: #666;">左列。birthtime、取れなければ mtime。</div>
+      </div>
+      <div style="background: #1a1a1a; border: 1px solid #333; border-radius: 6px; overflow: hidden;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #222; border-bottom: 1px solid #333;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M4 12h7M4 18h4M16 5v14M16 19l3-3M16 19l-3-3"/></svg>
+            <div style="font-size: 12px; color: #aaa; font-weight: 500;">名前順</div>
+          </div>
+          <button style="display: flex; align-items: center; gap: 4px; height: 22px; padding: 0 7px; background: #333; border: 1px solid #444; border-radius: 4px; color: #888; font-size: 11px; font-family: inherit; cursor: pointer;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 13l6 6 6-6"/></svg>
+            降順
+          </button>
+        </div>
+        <div style="padding: 7px 12px; font-size: 11px; color: #666;">右列。自然順ソート（img2 &lt; img10）。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- サムネイルの状態 -->
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 11px; color: #666; letter-spacing: 0.06em; text-transform: uppercase;">サムネイルの状態</div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px;">
+
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="width: 140px; background: #2a2a2a; border: 2px solid transparent; border-radius: 6px; overflow: hidden;">
+          <div style="height: 100px; background: linear-gradient(150deg, #7a5a3c, #453120);"></div>
+          <div style="padding: 4px 6px; font-size: 10px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">IMG_4473.jpg</div>
+          <div style="padding: 0 6px 5px; font-size: 10px; color: #666;">2026-02-14 09:21</div>
+        </div>
+        <div style="font-size: 11px; color: #aaa; font-weight: 500;">通常</div>
+        <div style="font-size: 10px; color: #666; line-height: 1.5;">枠は透明。左列のみ作成日を表示。</div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="width: 140px; background: #1e3a6e; border: 2px solid #4a7cf7; border-radius: 6px; overflow: hidden;">
+          <div style="height: 100px; background: linear-gradient(150deg, #7a5a3c, #453120);"></div>
+          <div style="padding: 4px 6px; font-size: 10px; color: #cfe0ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">IMG_4473.jpg</div>
+          <div style="padding: 0 6px 5px; font-size: 10px; color: #8fa6d8;">2026-02-14 09:21</div>
+        </div>
+        <div style="font-size: 11px; color: #aaa; font-weight: 500;">選択中</div>
+        <div style="font-size: 10px; color: #666; line-height: 1.5;">cmd/ctrl でトグル、shift で範囲選択。既存の sortable-selected を踏襲。</div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="width: 140px; background: #2a2a2a; border: 2px solid transparent; border-radius: 6px; overflow: hidden; opacity: 0.4; position: relative;">
+          <div style="height: 100px; background: linear-gradient(150deg, #7a5a3c, #453120);"></div>
+          <div style="position: absolute; top: 6px; right: 6px; display: flex; align-items: center; gap: 3px; background: rgba(26,26,26,0.85); border-radius: 3px; padding: 2px 5px;">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#4a7cf7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            <div style="font-size: 9px; color: #8fa6d8;">追加済み</div>
+          </div>
+          <div style="padding: 4px 6px; font-size: 10px; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">IMG_4473.jpg</div>
+          <div style="padding: 0 6px 5px; font-size: 10px; color: #5c5c5c;">2026-02-14 09:21</div>
+        </div>
+        <div style="font-size: 11px; color: #aaa; font-weight: 500;">追加済み</div>
+        <div style="font-size: 10px; color: #666; line-height: 1.5;">不透明度を落とし、再投入不可。中央列から外すと解除。</div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="width: 140px; background: #2a2a2a; border: 2px dashed #4a7cf7; border-radius: 6px; overflow: hidden; position: relative;">
+          <div style="height: 100px; background: linear-gradient(150deg, #7a5a3c, #453120); opacity: 0.55;"></div>
+          <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+            <div style="display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; background: #4a7cf7; border-radius: 50%;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            </div>
+          </div>
+          <div style="padding: 4px 6px; font-size: 10px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">IMG_4473.jpg</div>
+          <div style="padding: 0 6px 5px; font-size: 10px; color: #666;">2026-02-14 09:21</div>
+        </div>
+        <div style="font-size: 11px; color: #aaa; font-weight: 500;">ドラッグ中</div>
+        <div style="font-size: 10px; color: #666; line-height: 1.5;">破線枠と + バッジ。中央列へ投入できることを示す。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 複数選択のまとめドラッグ -->
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 11px; color: #666; letter-spacing: 0.06em; text-transform: uppercase;">複数選択してまとめて投入</div>
+    <div style="display: flex; align-items: center; gap: 20px; background: #202020; border: 1px solid #2f2f2f; border-radius: 6px; padding: 16px;">
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; width: 300px;">
+        <div style="background: #1e3a6e; border: 2px solid #4a7cf7; border-radius: 6px; overflow: hidden;">
+          <div style="height: 62px; background: linear-gradient(150deg, #7a5a3c, #453120);"></div>
+        </div>
+        <div style="background: #1e3a6e; border: 2px solid #4a7cf7; border-radius: 6px; overflow: hidden;">
+          <div style="height: 62px; background: linear-gradient(150deg, #3f5570, #26313f);"></div>
+        </div>
+        <div style="background: #2a2a2a; border: 2px solid transparent; border-radius: 6px; overflow: hidden;">
+          <div style="height: 62px; background: linear-gradient(150deg, #6d4550, #3e2830);"></div>
+        </div>
+        <div style="background: #1e3a6e; border: 2px solid #4a7cf7; border-radius: 6px; overflow: hidden;">
+          <div style="height: 62px; background: linear-gradient(150deg, #55603a, #333823);"></div>
+        </div>
+        <div style="background: #2a2a2a; border: 2px solid transparent; border-radius: 6px; overflow: hidden;">
+          <div style="height: 62px; background: linear-gradient(150deg, #7c6a3e, #473c22);"></div>
+        </div>
+        <div style="background: #2a2a2a; border: 2px solid transparent; border-radius: 6px; overflow: hidden;">
+          <div style="height: 62px; background: linear-gradient(150deg, #4a4a68, #2b2b3d);"></div>
+        </div>
+      </div>
+
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#4a5570" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+
+      <div style="position: relative; width: 120px; height: 90px;">
+        <div style="position: absolute; top: 10px; left: 10px; width: 92px; background: #2a2a2a; border: 2px solid #4a7cf7; border-radius: 6px; overflow: hidden; transform: rotate(-4deg);">
+          <div style="height: 62px; background: linear-gradient(150deg, #55603a, #333823);"></div>
+        </div>
+        <div style="position: absolute; top: 5px; left: 5px; width: 92px; background: #2a2a2a; border: 2px solid #4a7cf7; border-radius: 6px; overflow: hidden; transform: rotate(2deg);">
+          <div style="height: 62px; background: linear-gradient(150deg, #3f5570, #26313f);"></div>
+        </div>
+        <div style="position: absolute; top: 0; left: 0; width: 92px; background: #2a2a2a; border: 2px solid #4a7cf7; border-radius: 6px; overflow: hidden;">
+          <div style="height: 62px; background: linear-gradient(150deg, #7a5a3c, #453120);"></div>
+        </div>
+        <div style="position: absolute; top: -7px; right: 2px; display: flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 6px; background: #4a7cf7; border-radius: 10px; color: #fff; font-size: 11px; font-weight: 700;">3</div>
+      </div>
+
+      <div style="font-size: 11px; color: #777; line-height: 1.6; flex-grow: 1;">選択したサムネイルは重なって追従し、件数バッジが付く。SortableJS の MultiDrag プラグインを使う。</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

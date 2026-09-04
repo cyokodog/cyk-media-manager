@@ -1,0 +1,170 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: system-ui, sans-serif; background: #1a1a1a; color: #eee; }
+    a { color: #4a7cf7; } a:hover { color: #3a6ce7; }
+  </style>
+</helmet>
+
+<div style="width: 900px; padding: 24px; background: #1a1a1a; box-sizing: border-box; display: flex; flex-direction: column; gap: 26px;">
+
+  <div style="display: flex; flex-direction: column; gap: 4px;">
+    <div style="font-size: 15px; font-weight: 600; color: #eee;">中央列（リネーム対象）</div>
+    <div style="font-size: 12px; color: #777; line-height: 1.6;">リネーム対象と、その連番の順番を決めるためのUI。ファイルの実体を移動するものではない。背景を #1e1e1e、ヘッダーを青系にして左右列と区別する。</div>
+  </div>
+
+  <!-- 列ヘッダー -->
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 11px; color: #666; letter-spacing: 0.06em; text-transform: uppercase;">列ヘッダー — 対象件数と全クリア</div>
+    <div style="background: #1e1e1e; border: 1px solid #333; border-radius: 6px; overflow: hidden;">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #262b38; border-bottom: 1px solid #35405c;">
+        <div style="display: flex; align-items: center; gap: 7px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4a7cf7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+          <div style="font-size: 12px; color: #dfe6f7; font-weight: 600;">リネーム対象</div>
+          <div style="font-size: 11px; color: #8fa6d8; background: #2f3a52; border-radius: 9px; padding: 1px 7px;">6 件</div>
+        </div>
+        <button style="display: flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; background: transparent; border: 1px solid #4a5570; border-radius: 4px; color: #8fa6d8; font-size: 11px; font-family: inherit; cursor: pointer;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          全クリア
+        </button>
+      </div>
+      <div style="padding: 7px 12px; font-size: 11px; color: #666;">件数が 0 のとき全クリアは無効（色 #555、枠 #3a3a3a）。</div>
+    </div>
+  </div>
+
+  <!-- サムネイルの状態 -->
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 11px; color: #666; letter-spacing: 0.06em; text-transform: uppercase;">サムネイルの状態</div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px;">
+
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="width: 140px; background: #2a2a2a; border: 2px solid transparent; border-radius: 6px; overflow: hidden; position: relative;">
+          <div style="position: absolute; top: 5px; left: 5px; background: #4a7cf7; color: #fff; font-size: 10px; font-weight: 700; border-radius: 3px; padding: 2px 6px; font-family: ui-monospace, SFMono-Regular, monospace;">0010</div>
+          <div style="height: 100px; background: linear-gradient(150deg, #7a5a3c, #453120);"></div>
+          <div style="padding: 4px 6px 6px; font-size: 10px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">IMG_4473.jpg</div>
+        </div>
+        <div style="font-size: 11px; color: #aaa; font-weight: 500;">通常</div>
+        <div style="font-size: 10px; color: #666; line-height: 1.5;">左上に確定後の連番。並べ替えに追従して更新。</div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="width: 140px; background: #2a2a2a; border: 2px solid transparent; border-radius: 6px; overflow: hidden; position: relative;">
+          <div style="position: absolute; top: 5px; left: 5px; background: #4a7cf7; color: #fff; font-size: 10px; font-weight: 700; border-radius: 3px; padding: 2px 6px; font-family: ui-monospace, SFMono-Regular, monospace;">0010</div>
+          <div style="position: absolute; top: 5px; right: 5px; display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; background: rgba(26,26,26,0.88); border: 1px solid #4a4a4a; border-radius: 50%;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </div>
+          <div style="height: 100px; background: linear-gradient(150deg, #7a5a3c, #453120);"></div>
+          <div style="padding: 4px 6px 6px; font-size: 10px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">IMG_4473.jpg</div>
+        </div>
+        <div style="font-size: 11px; color: #aaa; font-weight: 500;">ホバー — 個別削除</div>
+        <div style="font-size: 10px; color: #666; line-height: 1.5;">右上に × ボタン。ホバー時のみ表示。</div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="width: 140px; background: #1e3a6e; border: 2px solid #4a7cf7; border-radius: 6px; overflow: hidden; position: relative;">
+          <div style="position: absolute; top: 5px; left: 5px; background: #4a7cf7; color: #fff; font-size: 10px; font-weight: 700; border-radius: 3px; padding: 2px 6px; font-family: ui-monospace, SFMono-Regular, monospace;">0010</div>
+          <div style="height: 100px; background: linear-gradient(150deg, #7a5a3c, #453120);"></div>
+          <div style="padding: 4px 6px 6px; font-size: 10px; color: #cfe0ff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">IMG_4473.jpg</div>
+        </div>
+        <div style="font-size: 11px; color: #aaa; font-weight: 500;">選択中</div>
+        <div style="font-size: 10px; color: #666; line-height: 1.5;">cmd/ctrl でトグル、shift で範囲選択。</div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="width: 140px; background: #2a2a2a; border: 2px solid transparent; border-radius: 6px; overflow: hidden; opacity: 0.3; position: relative;">
+          <div style="position: absolute; top: 5px; left: 5px; background: #4a7cf7; color: #fff; font-size: 10px; font-weight: 700; border-radius: 3px; padding: 2px 6px; font-family: ui-monospace, SFMono-Regular, monospace;">0010</div>
+          <div style="height: 100px; background: linear-gradient(150deg, #7a5a3c, #453120);"></div>
+          <div style="padding: 4px 6px 6px; font-size: 10px; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">IMG_4473.jpg</div>
+        </div>
+        <div style="font-size: 11px; color: #aaa; font-weight: 500;">ドラッグ元（ghost）</div>
+        <div style="font-size: 10px; color: #666; line-height: 1.5;">移動元は不透明度 0.3。既存の sortable-ghost を踏襲。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- D&D中の挿入位置 -->
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 11px; color: #666; letter-spacing: 0.06em; text-transform: uppercase;">D&amp;D中 — 挿入位置の表示</div>
+    <div style="background: #1e1e1e; border: 1px solid #2f2f2f; border-radius: 6px; padding: 16px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div style="width: 100px; background: #2a2a2a; border-radius: 6px; overflow: hidden; position: relative;">
+          <div style="position: absolute; top: 4px; left: 4px; background: #4a7cf7; color: #fff; font-size: 9px; font-weight: 700; border-radius: 3px; padding: 1px 5px; font-family: ui-monospace, SFMono-Regular, monospace;">0010</div>
+          <div style="height: 70px; background: linear-gradient(150deg, #7a5a3c, #453120);"></div>
+        </div>
+
+        <div style="width: 3px; height: 78px; background: #4a7cf7; border-radius: 2px; box-shadow: 0 0 8px rgba(74,124,247,0.7);"></div>
+
+        <div style="width: 100px; background: #2a2a2a; border-radius: 6px; overflow: hidden; position: relative; opacity: 0.3;">
+          <div style="position: absolute; top: 4px; left: 4px; background: #4a7cf7; color: #fff; font-size: 9px; font-weight: 700; border-radius: 3px; padding: 1px 5px; font-family: ui-monospace, SFMono-Regular, monospace;">0020</div>
+          <div style="height: 70px; background: linear-gradient(150deg, #3f5570, #26313f);"></div>
+        </div>
+        <div style="width: 100px; background: #2a2a2a; border-radius: 6px; overflow: hidden; position: relative;">
+          <div style="position: absolute; top: 4px; left: 4px; background: #4a7cf7; color: #fff; font-size: 9px; font-weight: 700; border-radius: 3px; padding: 1px 5px; font-family: ui-monospace, SFMono-Regular, monospace;">0030</div>
+          <div style="height: 70px; background: linear-gradient(150deg, #6d4550, #3e2830);"></div>
+        </div>
+        <div style="width: 100px; background: #2a2a2a; border-radius: 6px; overflow: hidden; position: relative;">
+          <div style="position: absolute; top: 4px; left: 4px; background: #4a7cf7; color: #fff; font-size: 9px; font-weight: 700; border-radius: 3px; padding: 1px 5px; font-family: ui-monospace, SFMono-Regular, monospace;">0040</div>
+          <div style="height: 70px; background: linear-gradient(150deg, #55603a, #333823);"></div>
+        </div>
+
+        <div style="font-size: 11px; color: #777; line-height: 1.6; flex-grow: 1; padding-left: 8px;">挿入位置は 3px の縦ライン（#4a7cf7、グロー付き）。連番は指を離した時点で全件再計算する。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 空状態 -->
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 11px; color: #666; letter-spacing: 0.06em; text-transform: uppercase;">空状態</div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+
+      <div style="background: #1e1e1e; border: 1px solid #333; border-radius: 6px; overflow: hidden;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #262b38; border-bottom: 1px solid #35405c;">
+          <div style="display: flex; align-items: center; gap: 7px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4a7cf7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+            <div style="font-size: 12px; color: #dfe6f7; font-weight: 600;">リネーム対象</div>
+            <div style="font-size: 11px; color: #6b7a99; background: #2a3040; border-radius: 9px; padding: 1px 7px;">0 件</div>
+          </div>
+          <button style="display: flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; background: transparent; border: 1px solid #3a3a3a; border-radius: 4px; color: #555; font-size: 11px; font-family: inherit;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            全クリア
+          </button>
+        </div>
+        <div style="height: 190px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 20px;">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#3d4658" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2" stroke-dasharray="4 3"/><path d="M12 9v6M9 12h6"/></svg>
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+            <div style="font-size: 12px; color: #7a8497;">リネームするファイルをここへ</div>
+            <div style="font-size: 11px; color: #555; text-align: center; line-height: 1.6;">左右の列からドラッグして追加します<br>並べた順に連番が振られます</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background: #1e1e1e; border: 1px solid #333; border-radius: 6px; overflow: hidden;">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #262b38; border-bottom: 1px solid #35405c;">
+          <div style="display: flex; align-items: center; gap: 7px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4a7cf7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+            <div style="font-size: 12px; color: #dfe6f7; font-weight: 600;">リネーム対象</div>
+            <div style="font-size: 11px; color: #6b7a99; background: #2a3040; border-radius: 9px; padding: 1px 7px;">0 件</div>
+          </div>
+        </div>
+        <div style="height: 190px; margin: 10px; border: 2px dashed #4a7cf7; border-radius: 6px; background: rgba(74,124,247,0.07); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #4a7cf7; border-radius: 50%;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+          </div>
+          <div style="font-size: 12px; color: #8fa6d8;">3 件を追加</div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size: 11px; color: #666; line-height: 1.6;">左: 何もドラッグしていない空状態。右: 空の中央列にドラッグが入ってきたとき。列全体が受け入れ領域になる。</div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

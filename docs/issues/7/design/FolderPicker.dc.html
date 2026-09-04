@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; font-family: system-ui, sans-serif; background: #1a1a1a; color: #eee; }
+    a { color: #4a7cf7; } a:hover { color: #3a6ce7; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  </style>
+</helmet>
+
+<div style="width: 900px; padding: 24px; background: #1a1a1a; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px;">
+
+  <div style="display: flex; flex-direction: column; gap: 4px;">
+    <div style="font-size: 15px; font-weight: 600; color: #eee;">ヘッダー — フォルダの指定</div>
+    <div style="font-size: 12px; color: #777; line-height: 1.6;">ブラウザからサーバーへ絶対パスを渡す手段がないため、ネイティブのフォルダ選択ダイアログは使えない。テキスト入力・履歴・サーバー側ディレクトリブラウザの3経路を用意する。</div>
+  </div>
+
+  <!-- ヘッダーの通常状態 -->
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 11px; color: #666; letter-spacing: 0.06em; text-transform: uppercase;">通常</div>
+    <div style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: #2a2a2a; border: 1px solid #333; border-radius: 6px;">
+      <div style="font-size: 13px; font-weight: 600; color: #aaa; letter-spacing: 0.02em;">cyk-media-manager</div>
+      <div style="display: flex; align-items: center; gap: 6px; background: #3a3a3a; border: 1px solid #444; border-radius: 4px; padding: 0 8px; height: 30px; flex-grow: 1;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        <div class="mono" style="font-size: 13px; color: #eee;">/Users/cyokodog/Pictures/2026-flowers</div>
+      </div>
+      <button style="display: flex; align-items: center; gap: 5px; height: 30px; padding: 0 10px; background: #3a3a3a; border: 1px solid #444; border-radius: 4px; color: #aaa; font-size: 12px; font-family: inherit; cursor: pointer;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        履歴
+      </button>
+      <button style="display: flex; align-items: center; gap: 5px; height: 30px; padding: 0 10px; background: #3a3a3a; border: 1px solid #444; border-radius: 4px; color: #aaa; font-size: 12px; font-family: inherit; cursor: pointer;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        参照
+      </button>
+      <button style="height: 30px; padding: 0 14px; background: #444; border: none; border-radius: 4px; color: #eee; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer;">読み込み</button>
+      <div style="font-size: 12px; color: #888;">128 件</div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start;">
+
+    <!-- 履歴ドロップダウン -->
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="font-size: 11px; color: #666; letter-spacing: 0.06em; text-transform: uppercase;">履歴 — localStorage</div>
+      <div style="background: #262626; border: 1px solid #3a3a3a; border-radius: 6px; overflow: hidden; box-shadow: 0 10px 28px rgba(0,0,0,0.5);">
+        <div style="padding: 8px 12px; background: #222; border-bottom: 1px solid #333; font-size: 11px; color: #777;">最近使ったフォルダ</div>
+        <div style="display: flex; align-items: center; gap: 8px; padding: 9px 12px; background: #2f3a52; border-bottom: 1px solid #2f2f2f;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4a7cf7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+            <div style="font-size: 12px; color: #dfe6f7;">2026-flowers</div>
+            <div class="mono" style="font-size: 10px; color: #8fa6d8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">/Users/cyokodog/Pictures/2026-flowers</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-bottom: 1px solid #2f2f2f;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+            <div style="font-size: 12px; color: #ccc;">2025-autumn</div>
+            <div class="mono" style="font-size: 10px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">/Users/cyokodog/Pictures/2025-autumn</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-bottom: 1px solid #2f2f2f;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+            <div style="font-size: 12px; color: #ccc;">screenshots</div>
+            <div class="mono" style="font-size: 10px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">/Users/cyokodog/Dropbox/screenshots</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; padding: 9px 12px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+            <div style="font-size: 12px; color: #ccc;">scan-2026-01</div>
+            <div class="mono" style="font-size: 10px; color: #666; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">/Users/cyokodog/Documents/scan-2026-01</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ディレクトリブラウザ -->
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div style="font-size: 11px; color: #666; letter-spacing: 0.06em; text-transform: uppercase;">参照 — ディレクトリブラウザ</div>
+      <div style="background: #212121; border: 1px solid #383838; border-radius: 8px; overflow: hidden; box-shadow: 0 16px 40px rgba(0,0,0,0.55);">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid #333;">
+          <div style="font-size: 13px; font-weight: 600; color: #eee;">フォルダを選択</div>
+          <div style="display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; cursor: pointer;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 4px; padding: 8px 14px; background: #1e1e1e; border-bottom: 1px solid #2f2f2f; flex-wrap: wrap;">
+          <div class="mono" style="font-size: 11px; color: #8fa6d8; cursor: pointer;">/Users</div>
+          <div style="font-size: 11px; color: #555;">/</div>
+          <div class="mono" style="font-size: 11px; color: #8fa6d8; cursor: pointer;">cyokodog</div>
+          <div style="font-size: 11px; color: #555;">/</div>
+          <div class="mono" style="font-size: 11px; color: #eee;">Pictures</div>
+        </div>
+
+        <div style="max-height: 200px; overflow-y: auto;">
+          <div style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid #2a2a2a;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#777" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+            <div class="mono" style="font-size: 12px; color: #aaa;">..</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; background: #2f3a52; border-bottom: 1px solid #2a2a2a;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4a7cf7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            <div style="font-size: 12px; color: #dfe6f7; flex-grow: 1;">2026-flowers</div>
+            <div style="font-size: 10px; color: #8fa6d8;">128 枚</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid #2a2a2a;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            <div style="font-size: 12px; color: #ccc; flex-grow: 1;">2025-autumn</div>
+            <div style="font-size: 10px; color: #666;">64 枚</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 1px solid #2a2a2a;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            <div style="font-size: 12px; color: #ccc; flex-grow: 1;">raw</div>
+            <div style="font-size: 10px; color: #666;">0 枚</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; padding: 8px 14px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            <div style="font-size: 12px; color: #ccc; flex-grow: 1;">exports</div>
+            <div style="font-size: 10px; color: #666;">12 枚</div>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 14px; background: #1e1e1e; border-top: 1px solid #333;">
+          <div class="mono" style="font-size: 10px; color: #777; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">…/Pictures/2026-flowers</div>
+          <div style="display: flex; gap: 8px; flex-shrink: 0;">
+            <button style="height: 30px; padding: 0 12px; background: transparent; border: 1px solid #444; border-radius: 4px; color: #aaa; font-size: 12px; font-family: inherit; cursor: pointer;">キャンセル</button>
+            <button style="height: 30px; padding: 0 16px; background: #4a7cf7; border: none; border-radius: 4px; color: #fff; font-size: 12px; font-weight: 500; font-family: inherit; cursor: pointer;">選択</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- エラー状態 -->
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 11px; color: #666; letter-spacing: 0.06em; text-transform: uppercase;">読み込み失敗</div>
+    <div style="display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: #2a2a2a; border: 1px solid #333; border-radius: 6px;">
+      <div style="font-size: 13px; font-weight: 600; color: #aaa; letter-spacing: 0.02em;">cyk-media-manager</div>
+      <div style="display: flex; align-items: center; gap: 6px; background: #3a3a3a; border: 1px solid #6b3f3a; border-radius: 4px; padding: 0 8px; height: 30px; flex-grow: 1;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e0705f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        <div class="mono" style="font-size: 13px; color: #eee;">/Users/cyokodog/Pictures/missing</div>
+      </div>
+      <button style="height: 30px; padding: 0 14px; background: #444; border: none; border-radius: 4px; color: #eee; font-size: 13px; font-weight: 500; font-family: inherit; cursor: pointer;">読み込み</button>
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#e0705f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 9v5M12 17.5v.5"/></svg>
+        <div style="font-size: 12px; color: #f0a89c;">フォルダが見つかりません</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

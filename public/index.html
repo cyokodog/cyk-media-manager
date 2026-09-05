@@ -5,82 +5,473 @@
   <title>cyk-media-manager</title>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
   <style>
+    :root {
+      --bg: #1a1a1a;
+      --panel: #2a2a2a;
+      --input: #3a3a3a;
+      --border: #444;
+      --divider: #333;
+      --accent: #4a7cf7;
+      --accent-hover: #3a6ce7;
+      --selected-bg: #1e3a6e;
+
+      --text: #eee;
+      --text-2: #aaa;
+      --text-3: #888;
+      --text-4: #666;
+      --text-5: #555;
+
+      --center-bg: #1e1e1e;
+      --center-header: #262b38;
+      --center-border: #35405c;
+      --center-text: #dfe6f7;
+      --center-text-2: #8fa6d8;
+      --center-chip: #2f3a52;
+
+      --danger: #e0705f;
+      --danger-text: #f0a89c;
+      --danger-bg: #33201f;
+      --danger-border: #6b3f3a;
+
+      --col-header-bg: #222;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: system-ui, sans-serif; background: #1a1a1a; color: #eee; padding: 16px; }
-    h1 { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: #aaa; }
 
-    .toolbar {
-      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
-      background: #2a2a2a; padding: 12px; border-radius: 8px; margin-bottom: 16px;
-    }
-    .toolbar input[type="text"] {
-      background: #3a3a3a; border: 1px solid #444; color: #eee;
-      padding: 6px 10px; border-radius: 4px; font-size: 13px;
-    }
-    .toolbar input[type="text"]:focus { outline: none; border-color: #666; }
-    #dirInput { width: 280px; }
-    #prefixInput { width: 120px; }
-    #digitsInput, #startInput, #stepInput { width: 60px; }
-    .toolbar label { font-size: 12px; color: #888; margin-right: 2px; }
-    .toolbar button {
-      padding: 6px 14px; border: none; border-radius: 4px;
-      font-size: 13px; cursor: pointer; font-weight: 500;
-    }
-    #loadBtn { background: #444; color: #eee; }
-    #loadBtn:hover { background: #555; }
-    #renameBtn { background: #4a7cf7; color: #fff; }
-    #renameBtn:hover { background: #3a6ce7; }
-    #renameBtn:disabled { background: #333; color: #666; cursor: not-allowed; }
+    html, body { height: 100%; }
 
-    #status { font-size: 12px; color: #888; margin-left: 4px; }
-
-    #grid {
-      display: flex; flex-wrap: wrap; gap: 10px;
+    body {
+      font-family: system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
+
+    button { font-family: inherit; cursor: pointer; }
+    button:disabled { cursor: not-allowed; }
+
+    /* ---------- ヘッダー ---------- */
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--divider);
+      flex-shrink: 0;
+    }
+
+    .header .brand {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-2);
+      letter-spacing: 0.02em;
+      margin-right: 4px;
+      white-space: nowrap;
+    }
+
+    .dir-field {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--input);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0 8px;
+      height: 30px;
+      flex-grow: 1;
+      max-width: 620px;
+    }
+    .dir-field:focus-within { border-color: var(--text-4); }
+    .dir-field.error { border-color: var(--danger-border); }
+    .dir-field svg { flex-shrink: 0; }
+
+    #dirInput {
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 13px;
+      font-family: var(--mono);
+      flex-grow: 1;
+      min-width: 0;
+    }
+    #dirInput::placeholder { color: var(--text-5); }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      height: 30px;
+      padding: 0 10px;
+      background: var(--input);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-2);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .btn:hover:not(:disabled) { background: var(--border); }
+    .btn:disabled { color: var(--text-5); border-color: var(--divider); }
+
+    .btn-primary {
+      height: 30px;
+      padding: 0 14px;
+      background: var(--border);
+      border: none;
+      border-radius: 4px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .btn-primary:hover:not(:disabled) { background: #555; }
+
+    .header .count { font-size: 12px; color: var(--text-3); white-space: nowrap; }
+
+    .header .error-msg {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--danger-text);
+      white-space: nowrap;
+    }
+
+    /* 履歴ドロップダウン */
+
+    .history-wrap { position: relative; }
+
+    .history-menu {
+      position: absolute;
+      top: calc(100% + 4px);
+      right: 0;
+      min-width: 300px;
+      max-width: 460px;
+      background: #262626;
+      border: 1px solid #3a3a3a;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+      z-index: 20;
+    }
+
+    .history-menu .menu-title {
+      padding: 8px 12px;
+      background: var(--col-header-bg);
+      border-bottom: 1px solid var(--divider);
+      font-size: 11px;
+      color: var(--text-4);
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-bottom: 1px solid #2f2f2f;
+      cursor: pointer;
+    }
+    .history-item:last-child { border-bottom: none; }
+    .history-item:hover { background: var(--center-chip); }
+    .history-item svg { flex-shrink: 0; }
+    .history-item .lines { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .history-item .base { font-size: 12px; color: #ccc; }
+    .history-item .full {
+      font-size: 10px;
+      color: var(--text-4);
+      font-family: var(--mono);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .history-empty { padding: 12px; font-size: 11px; color: var(--text-5); text-align: center; }
+
+    /* ---------- メイン 3カラム ---------- */
+
+    .main {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1px;
+      background: var(--divider);
+      flex-grow: 1;
+      min-height: 0;
+    }
+
+    .col {
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      min-height: 0;
+    }
+    .col-center { background: var(--center-bg); }
+
+    .col-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: var(--col-header-bg);
+      border-bottom: 1px solid var(--divider);
+      flex-shrink: 0;
+    }
+    .col-center .col-header {
+      background: var(--center-header);
+      border-bottom-color: var(--center-border);
+    }
+
+    .col-header .title { display: flex; align-items: center; gap: 6px; }
+    .col-header .title span { font-size: 12px; color: var(--text-2); font-weight: 500; }
+    .col-center .col-header .title span { color: var(--center-text); font-weight: 600; }
+
+    .col-header .chip {
+      font-size: 11px;
+      color: var(--center-text-2);
+      background: var(--center-chip);
+      border-radius: 9px;
+      padding: 1px 7px;
+    }
+
+    .col-body { flex-grow: 1; overflow-y: auto; padding: 10px; min-height: 0; }
+    .col-body::-webkit-scrollbar { width: 10px; }
+    .col-body::-webkit-scrollbar-thumb { background: var(--input); border-radius: 5px; }
+
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+
     .thumb {
-      width: 140px; cursor: grab; background: #2a2a2a;
-      border-radius: 6px; overflow: hidden; border: 2px solid transparent;
+      background: var(--panel);
+      border: 2px solid transparent;
+      border-radius: 6px;
+      overflow: hidden;
       user-select: none;
+      position: relative;
     }
-    .thumb:active { cursor: grabbing; }
-    .thumb.sortable-chosen { border-color: #4a7cf7; opacity: 0.9; }
-    .thumb.sortable-ghost { opacity: 0.3; }
-    .thumb.sortable-selected { border-color: #4a7cf7; background: #1e3a6e; }
     .thumb img {
-      width: 100%; height: 110px; object-fit: cover; display: block;
+      width: 100%;
+      height: 78px;
+      object-fit: cover;
+      display: block;
+      background: #222;
       pointer-events: none;
     }
-    .thumb .label {
-      font-size: 10px; color: #888; padding: 4px 6px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    .thumb .name {
+      padding: 3px 5px;
+      font-size: 9px;
+      color: var(--text-3);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
+    .thumb .name + .date { padding: 0 5px 4px; font-size: 9px; color: #7d7d7d; }
+
+    /* 空状態 */
+
+    .empty {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    .empty .lead { font-size: 12px; color: #7a8497; }
+    .empty .sub { font-size: 11px; color: var(--text-5); line-height: 1.6; }
+
+    /* ---------- フッター ---------- */
+
+    .footer {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      background: var(--panel);
+      border-top: 1px solid var(--divider);
+      flex-shrink: 0;
+    }
+
+    .field { display: flex; align-items: center; gap: 7px; }
+    .field label { font-size: 12px; color: var(--text-3); white-space: nowrap; }
+
+    .footer input[type="text"] {
+      background: var(--input);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      height: 30px;
+      padding: 0 10px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+    }
+    .footer input[type="text"]:focus { border-color: var(--text-4); }
+    .footer input[type="text"]:disabled { color: var(--text-5); }
+    #prefixInput { width: 200px; }
+    #digitsInput, #startInput, #stepInput { width: 52px; text-align: center; padding: 0 4px; }
+
+    .preview-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex-grow: 1;
+      padding-left: 6px;
+      border-left: 1px solid var(--input);
+      min-width: 0;
+    }
+    .preview-info .label { font-size: 11px; color: var(--text-4); }
+    .preview-info .sample {
+      font-size: 12px;
+      color: var(--text-5);
+      font-family: var(--mono);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .btn-ghost {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      height: 32px;
+      padding: 0 14px;
+      background: transparent;
+      border: 1px solid #4a5570;
+      border-radius: 4px;
+      color: var(--center-text-2);
+      font-size: 13px;
+    }
+    .btn-ghost:disabled { border-color: var(--input); color: var(--text-5); }
+
+    .btn-confirm {
+      height: 32px;
+      padding: 0 20px;
+      background: var(--accent);
+      border: none;
+      border-radius: 4px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .btn-confirm:hover:not(:disabled) { background: var(--accent-hover); }
+    .btn-confirm:disabled { background: var(--divider); color: var(--text-4); }
+
+    [hidden] { display: none !important; }
   </style>
 </head>
 <body>
-  <h1>cyk-media-manager</h1>
 
-  <div class="toolbar">
-    <label>フォルダ</label>
-    <input type="text" id="dirInput" placeholder="/path/to/folder">
-    <button id="loadBtn">読み込み</button>
+  <!-- ヘッダー -->
+  <div class="header">
+    <div class="brand">cyk-media-manager</div>
 
-    <label>プレフィックス</label>
-    <input type="text" id="prefixInput" placeholder="img">
+    <div class="dir-field" id="dirField">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      <input type="text" id="dirInput" placeholder="/path/to/folder" spellcheck="false" autocomplete="off">
+    </div>
 
-    <label>桁数</label>
-    <input type="text" id="digitsInput" value="3">
+    <div class="history-wrap">
+      <button class="btn" id="historyBtn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        履歴
+      </button>
+      <div class="history-menu" id="historyMenu" hidden>
+        <div class="menu-title">最近使ったフォルダ</div>
+        <div id="historyList"></div>
+      </div>
+    </div>
 
-    <label>開始番号</label>
-    <input type="text" id="startInput" value="1">
+    <button class="btn-primary" id="loadBtn">読み込み</button>
 
-    <label>スキップ</label>
-    <input type="text" id="stepInput" value="1">
-
-    <button id="renameBtn" disabled>リネーム実行</button>
-    <span id="status"></span>
+    <div class="count" id="count"></div>
+    <div class="error-msg" id="errorMsg" hidden>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 9v5M12 17.5v.5"/></svg>
+      <span id="errorText"></span>
+    </div>
   </div>
 
-  <div id="grid"></div>
+  <!-- メイン 3カラム -->
+  <div class="main">
+
+    <div class="col">
+      <div class="col-header">
+        <div class="title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+          <span>作成日順</span>
+        </div>
+      </div>
+      <div class="col-body" id="leftBody">
+        <div class="empty">
+          <div class="sub">フォルダを読み込むと<br>作成日順に表示されます</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col col-center">
+      <div class="col-header">
+        <div class="title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4a7cf7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+          <span>リネーム対象</span>
+          <div class="chip" id="centerCount">0 件</div>
+        </div>
+      </div>
+      <div class="col-body" id="centerBody">
+        <div class="empty">
+          <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#3d4658" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2" stroke-dasharray="4 3"/><path d="M12 9v6M9 12h6"/></svg>
+          <div>
+            <div class="lead">リネームするファイルをここへ</div>
+            <div class="sub" style="margin-top: 5px;">左右の列からドラッグして追加します<br>並べた順に連番が振られます</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="col-header">
+        <div class="title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M4 12h7M4 18h4M16 5v14M16 19l3-3M16 19l-3-3"/></svg>
+          <span>名前順</span>
+        </div>
+      </div>
+      <div class="col-body" id="rightBody">
+        <div class="empty">
+          <div class="sub">フォルダを読み込むと<br>名前順に表示されます</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- フッター -->
+  <div class="footer">
+    <div class="field">
+      <label for="prefixInput">プレフィックス</label>
+      <input type="text" id="prefixInput" placeholder="例: 花_ひまわり" spellcheck="false" autocomplete="off" disabled>
+    </div>
+
+    <div class="field">
+      <label for="digitsInput">桁数</label>
+      <input type="text" id="digitsInput" value="4" disabled>
+      <label for="startInput">開始</label>
+      <input type="text" id="startInput" value="10" disabled>
+      <label for="stepInput">ステップ</label>
+      <input type="text" id="stepInput" value="10" disabled>
+    </div>
+
+    <div class="preview-info">
+      <div class="label" id="targetCount">対象 0 件</div>
+      <div class="sample" id="sampleName">中央列にファイルを追加してください</div>
+    </div>
+
+    <button class="btn-ghost" id="previewBtn" disabled>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+      プレビュー
+    </button>
+    <button class="btn-confirm" id="renameBtn" disabled>確定</button>
+  </div>
 
   <script src="app.js"></script>
 </body>

@@ -2,6 +2,7 @@ const HISTORY_KEY = 'cyk-media-manager:history'
 const HISTORY_MAX = 8
 const DND_MIME = 'application/x-cyk-media'
 const DND_REMOVE_MIME = 'application/x-cyk-media-remove'
+const DND_MOVE_MIME = 'application/x-cyk-media-move'
 
 // ---------- 状態 ----------
 //
@@ -16,8 +17,15 @@ const state = {
   files: [],                       // API の返却をそのまま保持（順序は加工しない）
   targetOrder: [],                 // 中央列に入っているファイル名（順序どおり）
   sort: { left: 'asc', right: 'asc' },
-  selected: { left: new Set(), right: new Set() },
-  lastClicked: { left: null, right: null }   // shift 範囲選択の起点
+  selected: { left: new Set(), right: new Set(), center: new Set() },
+  lastClicked: { left: null, right: null, center: null }   // shift 範囲選択の起点
+}
+
+// 連番の既定値。フッターからの指定は #6 で連動させる
+const seq = { digits: 4, start: 10, step: 10 }
+
+function seqLabel(index) {
+  return String(seq.start + index * seq.step).padStart(seq.digits, '0')
 }
 
 const collator = new Intl.Collator(undefined, { numeric: true })
@@ -35,6 +43,7 @@ const errorText = document.getElementById('errorText')
 const centerCol = document.querySelector('.col-center')
 const centerBody = document.getElementById('centerBody')
 const centerCount = document.getElementById('centerCount')
+const clearBtn = document.getElementById('clearBtn')
 
 const columns = {
   left: { body: document.getElementById('leftBody'), toggle: document.getElementById('leftSort'), showDate: true, label: '作成日順' },
@@ -65,6 +74,8 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && !historyMenu.hidden) closeHistory()
 })
 
+clearBtn.addEventListener('click', () => clearTarget())
+
 setupCenterDropZone()
 setupSourceDropZones()
 restoreLastDir()
@@ -89,8 +100,10 @@ async function loadImages() {
     state.targetOrder = []
     state.selected.left.clear()
     state.selected.right.clear()
+    state.selected.center.clear()
     state.lastClicked.left = null
     state.lastClicked.right = null
+    state.lastClicked.center = null
 
     dirInput.value = data.dir
     renderAll()
@@ -212,9 +225,9 @@ function renderColumn(side) {
   body.appendChild(grid)
 }
 
-// 中央列は #5 が本実装する。ここでは投入結果が見える最小限の描画に留める。
 function renderCenter() {
   centerCount.textContent = `${state.targetOrder.length} 件`
+  clearBtn.disabled = state.targetOrder.length === 0
   centerBody.innerHTML = ''
 
   if (state.targetOrder.length === 0) {
@@ -231,13 +244,31 @@ function renderCenter() {
   const grid = document.createElement('div')
   grid.className = 'grid'
 
-  state.targetOrder.forEach(name => {
+  state.targetOrder.forEach((name, index) => {
     const f = state.files.find(x => x.name === name)
     if (!f) return
 
     const thumb = document.createElement('div')
     thumb.className = 'thumb'
     thumb.dataset.name = name
+    thumb.draggable = true
+    if (state.selected.center.has(name)) thumb.classList.add('selected')
+
+    // 確定後の連番。並べ替えるたびに全件振り直す
+    const badge = document.createElement('div')
+    badge.className = 'seq-badge'
+    badge.textContent = seqLabel(index)
+    thumb.appendChild(badge)
+
+    const remove = document.createElement('button')
+    remove.className = 'remove-btn'
+    remove.title = '中央列から外す'
+    remove.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>'
+    remove.addEventListener('click', e => {
+      e.stopPropagation()
+      removeFromTarget([name])
+    })
+    thumb.appendChild(remove)
 
     const img = document.createElement('img')
     img.src = `/api/thumbnail?path=${encodeURIComponent(f.path)}`
@@ -249,21 +280,136 @@ function renderCenter() {
     label.textContent = name
     label.title = name
 
-    // 左右列へドラッグして戻すと中央列から外れる。
-    // 中央列内の並べ替え・×ボタン・全クリアの UI は #5 が実装する。
-    thumb.draggable = true
-    thumb.addEventListener('dragstart', e => {
-      e.dataTransfer.setData(DND_REMOVE_MIME, JSON.stringify([name]))
-      e.dataTransfer.effectAllowed = 'move'
-      thumb.classList.add('dragging')
-    })
-    thumb.addEventListener('dragend', () => thumb.classList.remove('dragging'))
-
     thumb.append(img, label)
+
+    thumb.addEventListener('click', e => handleCenterClick(name, e))
+    thumb.addEventListener('dragstart', e => handleCenterDragStart(name, e))
+    thumb.addEventListener('dragend', () => {
+      hideInsertLine()
+      centerBody.querySelectorAll('.thumb.dragging').forEach(el => el.classList.remove('dragging'))
+    })
+
     grid.appendChild(thumb)
   })
 
   centerBody.appendChild(grid)
+}
+
+// ---------- 中央列の選択 ----------
+
+function handleCenterClick(name, e) {
+  const sel = state.selected.center
+  const order = state.targetOrder
+
+  if (e.shiftKey && state.lastClicked.center) {
+    const from = order.indexOf(state.lastClicked.center)
+    const to = order.indexOf(name)
+    if (from !== -1 && to !== -1) {
+      sel.clear()
+      const [lo, hi] = from <= to ? [from, to] : [to, from]
+      for (let i = lo; i <= hi; i++) sel.add(order[i])
+    }
+  } else if (e.metaKey || e.ctrlKey) {
+    sel.has(name) ? sel.delete(name) : sel.add(name)
+    state.lastClicked.center = name
+  } else {
+    sel.clear()
+    sel.add(name)
+    state.lastClicked.center = name
+  }
+
+  // 中央列を触ったら左右列の選択は解除する
+  state.selected.left.clear()
+  state.selected.right.clear()
+  renderAll()
+}
+
+// ---------- 中央列内の並べ替え ----------
+//
+// SortableJS は使わない（MultiDrag が CDN のビルドに無く、複数まとめての
+// 並べ替えを自前で書く必要があるため）。左右列と同じネイティブ D&D に揃えた。
+
+function handleCenterDragStart(name, e) {
+  const sel = state.selected.center
+
+  let names
+  if (sel.has(name)) {
+    names = state.targetOrder.filter(n => sel.has(n))
+  } else {
+    sel.clear()
+    sel.add(name)
+    state.lastClicked.center = name
+    names = [name]
+    renderCenter()
+  }
+
+  // 中央列内の並べ替えと、左右列へ戻す削除の両方を載せる
+  e.dataTransfer.setData(DND_MOVE_MIME, JSON.stringify(names))
+  e.dataTransfer.setData(DND_REMOVE_MIME, JSON.stringify(names))
+  e.dataTransfer.effectAllowed = 'move'
+
+  centerBody.querySelectorAll('.thumb').forEach(el => {
+    if (names.includes(el.dataset.name)) el.classList.add('dragging')
+  })
+}
+
+// ドロップ位置（何番目の前に入れるか）を、カーソルに最も近い境界から求める
+function insertIndexAt(clientX, clientY) {
+  const thumbs = [...centerBody.querySelectorAll('.thumb')]
+  if (thumbs.length === 0) return 0
+
+  let best = { index: thumbs.length, dist: Infinity }
+  thumbs.forEach((el, i) => {
+    const r = el.getBoundingClientRect()
+    for (const [edge, index] of [[r.left, i], [r.right, i + 1]]) {
+      const dx = clientX - edge
+      const dy = clientY - (r.top + r.height / 2)
+      const dist = Math.hypot(dx, dy)
+      if (dist < best.dist) best = { index, dist }
+    }
+  })
+  return best.index
+}
+
+let insertLine = null
+
+function showInsertLine(index) {
+  const thumbs = [...centerBody.querySelectorAll('.thumb')]
+  if (thumbs.length === 0) return
+
+  if (!insertLine) {
+    insertLine = document.createElement('div')
+    insertLine.className = 'insert-line'
+    centerBody.appendChild(insertLine)
+  }
+
+  const bodyRect = centerBody.getBoundingClientRect()
+  const at = index < thumbs.length ? thumbs[index] : thumbs[thumbs.length - 1]
+  const r = at.getBoundingClientRect()
+  const x = index < thumbs.length ? r.left : r.right
+
+  insertLine.style.left = `${x - bodyRect.left + centerBody.scrollLeft - 1}px`
+  insertLine.style.top = `${r.top - bodyRect.top + centerBody.scrollTop}px`
+  insertLine.style.height = `${r.height}px`
+}
+
+function hideInsertLine() {
+  if (insertLine) { insertLine.remove(); insertLine = null }
+}
+
+// 選択したものを index の位置へまとめて移動する
+function reorderTarget(names, index) {
+  const moving = new Set(names)
+  if (moving.size === 0) return
+
+  // 挿入位置より前にある移動対象の数だけ index を詰める
+  const before = state.targetOrder.slice(0, index).filter(n => moving.has(n)).length
+  const rest = state.targetOrder.filter(n => !moving.has(n))
+  const ordered = state.targetOrder.filter(n => moving.has(n))
+
+  rest.splice(index - before, 0, ...ordered)
+  state.targetOrder = rest
+  renderAll()
 }
 
 function emptyBlock(html) {
@@ -376,38 +522,52 @@ function setupSourceDropZones() {
 function setupCenterDropZone() {
   let depth = 0
 
+  const types = e => [...(e.dataTransfer?.types || [])]
+  const isAdd = e => types(e).includes(DND_MIME)
+  const isMove = e => types(e).includes(DND_MOVE_MIME)
+
   centerCol.addEventListener('dragenter', e => {
-    if (!hasPayload(e)) return
+    if (!isAdd(e) && !isMove(e)) return
     e.preventDefault()
     depth++
-    centerCol.classList.add('drop-active')
+    if (isAdd(e)) centerCol.classList.add('drop-active')
   })
 
   centerCol.addEventListener('dragover', e => {
-    if (!hasPayload(e)) return
+    if (!isAdd(e) && !isMove(e)) return
     e.preventDefault()
-    e.dataTransfer.dropEffect = 'copy'
+    e.dataTransfer.dropEffect = isMove(e) ? 'move' : 'copy'
+    // 並べ替え中は挿入位置を示す
+    if (isMove(e)) showInsertLine(insertIndexAt(e.clientX, e.clientY))
   })
 
   centerCol.addEventListener('dragleave', () => {
     depth = Math.max(0, depth - 1)
-    if (depth === 0) centerCol.classList.remove('drop-active')
+    if (depth === 0) {
+      centerCol.classList.remove('drop-active')
+      hideInsertLine()
+    }
   })
 
   centerCol.addEventListener('drop', e => {
+    if (!isAdd(e) && !isMove(e)) return
     e.preventDefault()
     depth = 0
     centerCol.classList.remove('drop-active')
 
+    const index = isMove(e) ? insertIndexAt(e.clientX, e.clientY) : -1
+    hideInsertLine()
+
+    const mime = isMove(e) ? DND_MOVE_MIME : DND_MIME
     let names = []
     try {
-      names = JSON.parse(e.dataTransfer.getData(DND_MIME) || '[]')
+      names = JSON.parse(e.dataTransfer.getData(mime) || '[]')
     } catch {
       return
     }
     if (!Array.isArray(names) || names.length === 0) return
 
-    addToTarget(names)
+    isMove(e) ? reorderTarget(names, index) : addToTarget(names)
   })
 }
 
@@ -432,17 +592,21 @@ function removeFromTarget(names) {
   const drop = new Set(Array.isArray(names) ? names : [names])
   const before = state.targetOrder.length
   state.targetOrder = state.targetOrder.filter(n => !drop.has(n))
-  if (state.targetOrder.length !== before) renderAll()
+  if (state.targetOrder.length === before) return
+  drop.forEach(n => state.selected.center.delete(n))
+  renderAll()
 }
 
 function clearTarget() {
   if (state.targetOrder.length === 0) return
   state.targetOrder = []
+  state.selected.center.clear()
+  state.lastClicked.center = null
   renderAll()
 }
 
 // #5 および E2E から使う
-window.__cyk = { state, addToTarget, removeFromTarget, clearTarget, renderAll }
+window.__cyk = { state, seq, addToTarget, removeFromTarget, clearTarget, reorderTarget, renderAll }
 
 // ---------- ヘッダーの表示 ----------
 
@@ -469,6 +633,7 @@ function clearColumns() {
   state.targetOrder = []
   state.selected.left.clear()
   state.selected.right.clear()
+  state.selected.center.clear()
   renderAll()
 }
 

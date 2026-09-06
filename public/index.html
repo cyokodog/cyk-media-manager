@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>cyk-media-manager</title>
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
   <style>
     :root {
       --bg: #1a1a1a;
@@ -315,6 +314,76 @@
 
     .thumb.dragging { opacity: 0.3; }
 
+    /* 全クリアボタン */
+
+    .clear-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 22px;
+      padding: 0 8px;
+      background: transparent;
+      border: 1px solid #4a5570;
+      border-radius: 4px;
+      color: var(--center-text-2);
+      font-size: 11px;
+    }
+    .clear-btn:hover:not(:disabled) { background: var(--center-chip); }
+    .clear-btn:disabled { border-color: var(--input); color: var(--text-5); }
+
+    /* 中央列のサムネイル */
+
+    .col-center .thumb { cursor: grab; }
+    .col-center .thumb:active { cursor: grabbing; }
+
+    .seq-badge {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      border-radius: 3px;
+      padding: 2px 6px;
+      font-family: var(--mono);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .remove-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      padding: 0;
+      background: rgba(26, 26, 26, 0.88);
+      border: 1px solid #4a4a4a;
+      border-radius: 50%;
+      color: #ccc;
+      z-index: 2;
+    }
+    .col-center .thumb:hover .remove-btn { display: flex; }
+    .remove-btn:hover { background: var(--danger-bg); border-color: var(--danger-border); color: var(--danger-text); }
+
+    /* 挿入位置のライン */
+
+    .insert-line {
+      position: absolute;
+      width: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      box-shadow: 0 0 8px rgba(74, 124, 247, 0.7);
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .col-center .col-body { position: relative; }
+
     /* 中央列がドロップを受け付けている状態 */
 
     .col-center.drop-active .col-body { background: rgba(74, 124, 247, 0.07); }
@@ -496,6 +565,10 @@
           <span>リネーム対象</span>
           <div class="chip" id="centerCount">0 件</div>
         </div>
+        <button class="clear-btn" id="clearBtn" disabled>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          全クリア
+        </button>
       </div>
       <div class="col-body" id="centerBody">
         <div class="empty">

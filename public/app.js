@@ -21,11 +21,18 @@ const state = {
   lastClicked: { left: null, right: null, center: null }   // shift 範囲選択の起点
 }
 
-// 連番の既定値。フッターからの指定は #6 で連動させる
+// 連番の設定。フッターの入力と連動する
 const seq = { digits: 4, start: 10, step: 10 }
 
 function seqLabel(index) {
   return String(seq.start + index * seq.step).padStart(seq.digits, '0')
+}
+
+// サーバー側の clampInt と同じ丸め方をする（プレビューと実行を一致させるため）
+function clampInt(value, fallback, min, max) {
+  const n = parseInt(value, 10)
+  if (Number.isNaN(n)) return fallback
+  return Math.min(Math.max(n, min), max)
 }
 
 const collator = new Intl.Collator(undefined, { numeric: true })
@@ -44,6 +51,26 @@ const centerCol = document.querySelector('.col-center')
 const centerBody = document.getElementById('centerBody')
 const centerCount = document.getElementById('centerCount')
 const clearBtn = document.getElementById('clearBtn')
+
+const prefixInput = document.getElementById('prefixInput')
+const digitsInput = document.getElementById('digitsInput')
+const startInput = document.getElementById('startInput')
+const stepInput = document.getElementById('stepInput')
+const targetCount = document.getElementById('targetCount')
+const sampleName = document.getElementById('sampleName')
+const previewBtn = document.getElementById('previewBtn')
+const renameBtn = document.getElementById('renameBtn')
+
+const modalBackdrop = document.getElementById('modalBackdrop')
+const modal = document.getElementById('modal')
+const modalSub = document.getElementById('modalSub')
+const modalDir = document.getElementById('modalDir')
+const modalWarning = document.getElementById('modalWarning')
+const modalWarnTitle = document.getElementById('modalWarnTitle')
+const modalList = document.getElementById('modalList')
+const modalStart = document.getElementById('modalStart')
+const modalStartHint = document.getElementById('modalStartHint')
+const modalApply = document.getElementById('modalApply')
 
 const columns = {
   left: { body: document.getElementById('leftBody'), toggle: document.getElementById('leftSort'), showDate: true, label: '作成日順' },
@@ -76,6 +103,31 @@ document.addEventListener('keydown', e => {
 
 clearBtn.addEventListener('click', () => clearTarget())
 
+for (const input of [digitsInput, startInput, stepInput]) {
+  input.addEventListener('input', () => { readSeqInputs(); renderCenter(); syncFooter() })
+}
+prefixInput.addEventListener('input', syncFooter)
+previewBtn.addEventListener('click', openPreview)
+renameBtn.addEventListener('click', openPreview)
+
+document.getElementById('modalClose').addEventListener('click', closeModal)
+document.getElementById('modalCancel').addEventListener('click', closeModal)
+modalBackdrop.addEventListener('click', e => { if (e.target === modalBackdrop) closeModal() })
+modalApply.addEventListener('click', applyRename)
+modalStart.addEventListener('input', () => {
+  startInput.value = modalStart.value
+  readSeqInputs()
+  renderCenter()
+  syncFooter()
+  refreshPreview()
+})
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !modalBackdrop.hidden) closeModal()
+})
+
+readSeqInputs()
+syncFooter()
+
 setupCenterDropZone()
 setupSourceDropZones()
 restoreLastDir()
@@ -107,6 +159,7 @@ async function loadImages() {
 
     dirInput.value = data.dir
     renderAll()
+    syncFooter()
     setCount(`${state.files.length} 件`)
     pushHistory(data.dir)
   } catch {
@@ -410,6 +463,7 @@ function reorderTarget(names, index) {
   rest.splice(index - before, 0, ...ordered)
   state.targetOrder = rest
   renderAll()
+  syncFooter()
 }
 
 function emptyBlock(html) {
@@ -586,6 +640,7 @@ function addToTarget(names) {
   state.selected.left.clear()
   state.selected.right.clear()
   renderAll()
+  syncFooter()
 }
 
 function removeFromTarget(names) {
@@ -595,6 +650,7 @@ function removeFromTarget(names) {
   if (state.targetOrder.length === before) return
   drop.forEach(n => state.selected.center.delete(n))
   renderAll()
+  syncFooter()
 }
 
 function clearTarget() {
@@ -603,10 +659,228 @@ function clearTarget() {
   state.selected.center.clear()
   state.lastClicked.center = null
   renderAll()
+  syncFooter()
 }
 
 // #5 および E2E から使う
 window.__cyk = { state, seq, addToTarget, removeFromTarget, clearTarget, reorderTarget, renderAll }
+
+// ---------- フッター ----------
+
+function readSeqInputs() {
+  seq.digits = clampInt(digitsInput.value, 4, 1, 10)
+  seq.start = clampInt(startInput.value, 1, 0, Number.MAX_SAFE_INTEGER)
+  seq.step = clampInt(stepInput.value, 1, 1, Number.MAX_SAFE_INTEGER)
+}
+
+function currentPrefix() {
+  return prefixInput.value.trim()
+}
+
+function syncFooter() {
+  const n = state.targetOrder.length
+  const prefix = currentPrefix()
+
+  targetCount.textContent = `対象 ${n} 件`
+
+  if (n === 0) {
+    sampleName.textContent = '中央列にファイルを追加してください'
+  } else if (!prefix) {
+    sampleName.textContent = 'プレフィックスを入力してください'
+  } else {
+    const ext = extOf(state.targetOrder[0])
+    const first = `${prefix}_${seqLabel(0)}${ext}`
+    if (n === 1) {
+      sampleName.textContent = first
+    } else {
+      const lastExt = extOf(state.targetOrder[n - 1])
+      sampleName.textContent = `${first} → ${prefix}_${seqLabel(n - 1)}${lastExt}`
+    }
+  }
+
+  const ready = n > 0 && Boolean(prefix)
+  renameBtn.disabled = !ready
+  previewBtn.disabled = !ready
+}
+
+// 拡張子はサーバー側と同じく小文字化する
+function extOf(name) {
+  const i = name.lastIndexOf('.')
+  return i > 0 ? name.slice(i).toLowerCase() : ''
+}
+
+// ---------- プレビューと実行 ----------
+
+let currentPlan = null
+
+async function fetchPlan() {
+  const res = await fetch('/api/rename/plan', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      dir: state.dir,
+      files: state.targetOrder,
+      prefix: currentPrefix(),
+      digits: seq.digits,
+      start: seq.start,
+      step: seq.step
+    })
+  })
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error || 'プレビューの取得に失敗しました')
+  return data
+}
+
+async function openPreview() {
+  if (renameBtn.disabled) return
+  try {
+    currentPlan = await fetchPlan()
+  } catch (err) {
+    showError(err.message)
+    return
+  }
+  modalStart.value = String(seq.start)
+  renderPreview()
+  modalBackdrop.hidden = false
+}
+
+async function refreshPreview() {
+  if (modalBackdrop.hidden) return
+  try {
+    currentPlan = await fetchPlan()
+    renderPreview()
+  } catch {
+    // 入力途中は取得に失敗しうるので黙って据え置く
+  }
+}
+
+function renderPreview() {
+  const { dir, plan, collisions } = currentPlan
+
+  modalSub.textContent = `${plan.length} 件を変更します`
+  modalDir.textContent = dir
+  modalList.innerHTML = ''
+
+  modal.classList.toggle('has-collision', collisions > 0)
+  modalWarning.hidden = collisions === 0
+  if (collisions > 0) {
+    modalWarnTitle.textContent = `${collisions} 件が既存のファイルと衝突します`
+    modalStartHint.textContent = 'を変更して回避'
+  } else {
+    modalStartHint.textContent = ''
+  }
+
+  const prefix = currentPrefix()
+  plan.forEach(row => {
+    const el = document.createElement('div')
+    el.className = 'modal-row' + (row.collides ? ' collide' : '')
+    el.dataset.from = row.from
+
+    const from = document.createElement('div')
+    from.className = 'from'
+    from.textContent = row.from
+    from.title = row.from
+
+    const arrow = document.createElement('div')
+    arrow.className = 'arrow-col'
+    arrow.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${row.collides ? '#e0705f' : '#555'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>`
+
+    const to = document.createElement('div')
+    to.className = 'to'
+    const label = document.createElement('span')
+    label.className = 'label'
+    // 連番部分だけ色を変える
+    const seqPart = row.to.slice(prefix.length + 1, row.to.lastIndexOf('.'))
+    label.innerHTML = `${escapeHtml(prefix)}_<span class="seq">${escapeHtml(seqPart)}</span>${escapeHtml(row.to.slice(row.to.lastIndexOf('.')))}`
+    label.title = row.to
+    to.appendChild(label)
+
+    if (row.collides) {
+      const tag = document.createElement('span')
+      tag.className = 'tag'
+      tag.textContent = row.reason === 'duplicate' ? '重複' : '既存'
+      to.appendChild(tag)
+    }
+
+    el.append(from, arrow, to)
+    modalList.appendChild(el)
+  })
+
+  modalApply.disabled = collisions > 0
+}
+
+function escapeHtml(str) {
+  const d = document.createElement('div')
+  d.textContent = str
+  return d.innerHTML
+}
+
+function closeModal() {
+  modalBackdrop.hidden = true
+  currentPlan = null
+}
+
+async function applyRename() {
+  if (modalApply.disabled) return
+
+  modalApply.disabled = true
+  modalApply.textContent = '実行中...'
+
+  try {
+    const res = await fetch('/api/rename', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        dir: state.dir,
+        files: state.targetOrder,
+        prefix: currentPrefix(),
+        digits: seq.digits,
+        start: seq.start,
+        step: seq.step
+      })
+    })
+    const data = await res.json()
+
+    if (!res.ok) {
+      // 衝突が後から発生した場合はプレビューを取り直して見せる
+      if (res.status === 409) {
+        await refreshPreview()
+        return
+      }
+      closeModal()
+      showError(data.error || 'リネームに失敗しました')
+      return
+    }
+
+    // 新しい名前のまま並び順を保つ
+    const newOrder = data.renamed.map(r => r.to)
+    closeModal()
+    await reloadAfterRename(newOrder)
+    setCount(`${state.files.length} 件 — ${data.renamed.length} 件をリネームしました`)
+  } catch {
+    closeModal()
+    showError('リネームに失敗しました')
+  } finally {
+    modalApply.textContent = '実行'
+    modalApply.disabled = false
+  }
+}
+
+// リネーム後はパスが変わるので読み直し、中央列は新しい名前で復元する
+async function reloadAfterRename(newOrder) {
+  const res = await fetch(`/api/images?dir=${encodeURIComponent(state.dir)}`)
+  const data = await res.json()
+  if (!res.ok) return showError(data.error || '読み込みに失敗しました')
+
+  state.files = data.files
+  const known = new Set(data.files.map(f => f.name))
+  state.targetOrder = newOrder.filter(n => known.has(n))
+  state.selected.left.clear()
+  state.selected.right.clear()
+  state.selected.center.clear()
+  renderAll()
+  syncFooter()
+}
 
 // ---------- ヘッダーの表示 ----------
 

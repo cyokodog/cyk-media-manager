@@ -3,6 +3,11 @@ const path = require('path')
 
 const FIXTURES = path.join(__dirname, 'fixtures')
 
+// fixture の枚数はディレクトリから数える（画像を足しても壊れないように）
+const IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif']
+const IMAGE_COUNT = require('fs').readdirSync(FIXTURES)
+  .filter(f => IMAGE_EXTS.includes(path.extname(f).toLowerCase())).length
+
 async function load(page, dir = FIXTURES) {
   await page.fill('#dirInput', dir)
   await page.click('#loadBtn')
@@ -30,7 +35,7 @@ test('ヘッダー・3カラム・フッターの3段構成になっている', 
 
 test('3カラムが高さいっぱいで、各列が独立してスクロールする', async ({ page }) => {
   await load(page)
-  await expect(page.locator('#leftBody .thumb')).toHaveCount(5)
+  await expect(page.locator('#leftBody .thumb')).toHaveCount(IMAGE_COUNT)
 
   const vh = page.viewportSize().height
   const main = await page.locator('.main').boundingBox()
@@ -61,9 +66,9 @@ test('テキスト入力でフォルダを指定して読み込める', async ({
   await load(page)
 
   // 画像5枚のみ（notes.txt は除外）
-  await expect(page.locator('#leftBody .thumb')).toHaveCount(5)
-  await expect(page.locator('#rightBody .thumb')).toHaveCount(5)
-  await expect(page.locator('#count')).toHaveText('5 件')
+  await expect(page.locator('#leftBody .thumb')).toHaveCount(IMAGE_COUNT)
+  await expect(page.locator('#rightBody .thumb')).toHaveCount(IMAGE_COUNT)
+  await expect(page.locator('#count')).toHaveText(`${IMAGE_COUNT} 件`)
 
   // 大文字拡張子も含まれる
   const names = await page.locator('#leftBody .thumb .name').allTextContents()
@@ -78,14 +83,14 @@ test('テキスト入力でフォルダを指定して読み込める', async ({
   // 作成日は左列のみに表示される（デザイン #7）
   const date = await page.locator('#leftBody .thumb .date').first().textContent()
   expect(date).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/)
-  await expect(page.locator('#leftBody .thumb .date')).toHaveCount(5)
+  await expect(page.locator('#leftBody .thumb .date')).toHaveCount(IMAGE_COUNT)
   await expect(page.locator('#rightBody .thumb .date')).toHaveCount(0)
 })
 
 test('Enter キーでも読み込める', async ({ page }) => {
   await page.fill('#dirInput', FIXTURES)
   await page.press('#dirInput', 'Enter')
-  await expect(page.locator('#count')).toHaveText('5 件')
+  await expect(page.locator('#count')).toHaveText(`${IMAGE_COUNT} 件`)
 })
 
 test('読み込み失敗時にエラーが表示される', async ({ page }) => {
@@ -108,7 +113,7 @@ test('履歴に保存され、選ぶと読み込まれる', async ({ page }) => 
   await page.keyboard.press('Escape')
 
   await load(page)
-  await expect(page.locator('#count')).toHaveText('5 件')
+  await expect(page.locator('#count')).toHaveText(`${IMAGE_COUNT} 件`)
 
   // localStorage に入っている
   const stored = await page.evaluate(() => localStorage.getItem('cyk-media-manager:history'))
@@ -124,12 +129,12 @@ test('履歴に保存され、選ぶと読み込まれる', async ({ page }) => 
   await expect(page.locator('.history-item .full')).toHaveText(FIXTURES)
   await page.click('.history-item')
   await expect(page.locator('#historyMenu')).toBeHidden()
-  await expect(page.locator('#count')).toHaveText('5 件')
+  await expect(page.locator('#count')).toHaveText(`${IMAGE_COUNT} 件`)
 })
 
 test('履歴は重複せず、新しいものが先頭に来る', async ({ page }) => {
   await load(page)
-  await expect(page.locator('#count')).toHaveText('5 件')
+  await expect(page.locator('#count')).toHaveText(`${IMAGE_COUNT} 件`)
 
   // 親ディレクトリには画像がないので 0 件になるのを待つ
   const parent = path.dirname(FIXTURES)
@@ -138,7 +143,7 @@ test('履歴は重複せず、新しいものが先頭に来る', async ({ page 
 
   // もう一度 fixtures を読み、履歴の先頭に来ることを確認する
   await load(page, FIXTURES)
-  await expect(page.locator('#count')).toHaveText('5 件')
+  await expect(page.locator('#count')).toHaveText(`${IMAGE_COUNT} 件`)
 
   const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('cyk-media-manager:history')))
   expect(stored[0]).toBe(FIXTURES)
@@ -147,7 +152,7 @@ test('履歴は重複せず、新しいものが先頭に来る', async ({ page 
 
 test('中央列は空状態、フッターは無効', async ({ page }) => {
   await load(page)
-  await expect(page.locator('#count')).toHaveText('5 件')
+  await expect(page.locator('#count')).toHaveText(`${IMAGE_COUNT} 件`)
 
   // 中央列は空のまま（#4 / #5 で投入できるようになる）
   await expect(page.locator('#centerBody .thumb')).toHaveCount(0)
@@ -162,7 +167,7 @@ test('中央列は空状態、フッターは無効', async ({ page }) => {
 
 test('スクリーンショット', async ({ page }, testInfo) => {
   await load(page)
-  await expect(page.locator('#leftBody .thumb')).toHaveCount(5)
+  await expect(page.locator('#leftBody .thumb')).toHaveCount(IMAGE_COUNT)
   await page.waitForTimeout(300)
   await testInfo.attach('loaded', { body: await page.screenshot(), contentType: 'image/png' })
   await page.screenshot({ path: 'e2e/__screenshots__/loaded.png' })

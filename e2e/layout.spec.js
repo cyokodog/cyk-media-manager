@@ -150,19 +150,18 @@ test('履歴は重複せず、新しいものが先頭に来る', async ({ page 
   expect(stored.filter(p => p === FIXTURES)).toHaveLength(1)
 })
 
-test('中央列は空状態、フッターは無効', async ({ page }) => {
+test('読み込み直後は中央列が空で、確定できない', async ({ page }) => {
   await load(page)
   await expect(page.locator('#count')).toHaveText(`${IMAGE_COUNT} 件`)
 
-  // 中央列は空のまま（#4 / #5 で投入できるようになる）
   await expect(page.locator('#centerBody .thumb')).toHaveCount(0)
   await expect(page.locator('#centerBody .empty')).toBeVisible()
   await expect(page.locator('#centerCount')).toHaveText('0 件')
 
-  // フッターは見た目のみ。#6 で配線する
+  // 対象0件なので確定・プレビューは無効。入力自体は #6 で有効になっている
   await expect(page.locator('#renameBtn')).toBeDisabled()
   await expect(page.locator('#previewBtn')).toBeDisabled()
-  await expect(page.locator('#prefixInput')).toBeDisabled()
+  await expect(page.locator('#prefixInput')).toBeEnabled()
 })
 
 test('スクリーンショット', async ({ page }, testInfo) => {

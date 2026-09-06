@@ -502,6 +502,172 @@
     .btn-confirm:hover:not(:disabled) { background: var(--accent-hover); }
     .btn-confirm:disabled { background: var(--divider); color: var(--text-4); }
 
+    /* ---------- リネーム確認モーダル ---------- */
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+
+    .modal {
+      width: min(680px, calc(100vw - 48px));
+      max-height: calc(100vh - 80px);
+      display: flex;
+      flex-direction: column;
+      background: #212121;
+      border: 1px solid #383838;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+    }
+    .modal.has-collision { border-color: #5c3a3a; }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--divider);
+      flex-shrink: 0;
+    }
+    .modal-title { font-size: 14px; font-weight: 600; color: var(--text); }
+    .modal-sub { font-size: 11px; color: var(--text-4); margin-top: 3px; }
+    .modal-close {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      background: none;
+      border: none;
+      border-radius: 4px;
+      color: var(--text-3);
+    }
+    .modal-close:hover { background: var(--divider); color: var(--text); }
+
+    .modal-path {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 16px;
+      background: #1c2436;
+      border-bottom: 1px solid #2c3648;
+      font-size: 11px;
+      color: var(--center-text-2);
+      font-family: var(--mono);
+      flex-shrink: 0;
+    }
+    .modal-path span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .modal-warning {
+      display: flex;
+      align-items: flex-start;
+      gap: 9px;
+      padding: 12px 16px;
+      background: var(--danger-bg);
+      border-bottom: 1px solid var(--danger-border);
+      flex-shrink: 0;
+    }
+    .modal-warning svg { flex-shrink: 0; margin-top: 1px; }
+    .modal-warning .warn-title { font-size: 12px; color: var(--danger-text); font-weight: 600; }
+    .modal-warning .warn-body { font-size: 11px; color: #c99287; line-height: 1.6; margin-top: 4px; }
+
+    .modal-thead {
+      display: flex;
+      padding: 7px 16px;
+      background: #1e1e1e;
+      border-bottom: 1px solid #2f2f2f;
+      font-size: 10px;
+      color: var(--text-4);
+      flex-shrink: 0;
+    }
+    .modal-thead > div { flex: 1; }
+    .modal-thead .arrow-col, .modal-row .arrow-col { flex: 0 0 22px; }
+
+    .modal-list { overflow-y: auto; flex-grow: 1; min-height: 0; }
+    .modal-list::-webkit-scrollbar { width: 10px; }
+    .modal-list::-webkit-scrollbar-thumb { background: var(--input); border-radius: 5px; }
+
+    .modal-row {
+      display: flex;
+      align-items: center;
+      padding: 8px 16px;
+      border-bottom: 1px solid #2a2a2a;
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+    .modal-row:last-child { border-bottom: none; }
+    .modal-row .from { flex: 1; color: #999; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .modal-row .arrow-col { display: flex; justify-content: center; }
+    .modal-row .to { flex: 1; display: flex; align-items: center; gap: 5px; min-width: 0; color: var(--center-text); }
+    .modal-row .to .label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .modal-row .to .seq { color: var(--accent); font-weight: 700; }
+
+    .modal-row.collide { background: #2b1d1c; border-left: 2px solid var(--danger); }
+    .modal-row.collide .to { color: var(--danger-text); }
+    .modal-row.collide .to .seq { color: inherit; }
+    .modal-row .tag {
+      font-size: 9px;
+      color: var(--danger);
+      border: 1px solid var(--danger-border);
+      border-radius: 3px;
+      padding: 1px 4px;
+      flex-shrink: 0;
+      font-family: system-ui, sans-serif;
+    }
+
+    .modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 16px;
+      background: #1e1e1e;
+      border-top: 1px solid var(--divider);
+      flex-shrink: 0;
+    }
+    .modal-start { display: flex; align-items: center; gap: 7px; }
+    .modal-start label { font-size: 11px; color: var(--text-3); }
+    .modal-start span { font-size: 11px; color: var(--text-4); }
+    #modalStart {
+      width: 58px;
+      height: 28px;
+      text-align: center;
+      background: var(--input);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      font-size: 12px;
+      font-family: inherit;
+      outline: none;
+    }
+    .modal.has-collision #modalStart { border-color: var(--accent); }
+
+    .modal-actions { display: flex; gap: 8px; }
+    .btn-cancel {
+      height: 32px;
+      padding: 0 14px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-2);
+      font-size: 13px;
+    }
+    .btn-cancel:hover { background: var(--divider); }
+
+    .modal-ok {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #8fbf9c;
+    }
+
     [hidden] { display: none !important; }
   </style>
 </head>
@@ -605,16 +771,16 @@
   <div class="footer">
     <div class="field">
       <label for="prefixInput">プレフィックス</label>
-      <input type="text" id="prefixInput" placeholder="例: 花_ひまわり" spellcheck="false" autocomplete="off" disabled>
+      <input type="text" id="prefixInput" placeholder="例: 花_ひまわり" spellcheck="false" autocomplete="off">
     </div>
 
     <div class="field">
       <label for="digitsInput">桁数</label>
-      <input type="text" id="digitsInput" value="4" disabled>
+      <input type="text" id="digitsInput" value="4">
       <label for="startInput">開始</label>
-      <input type="text" id="startInput" value="10" disabled>
+      <input type="text" id="startInput" value="10">
       <label for="stepInput">ステップ</label>
-      <input type="text" id="stepInput" value="10" disabled>
+      <input type="text" id="stepInput" value="10">
     </div>
 
     <div class="preview-info">
@@ -627,6 +793,54 @@
       プレビュー
     </button>
     <button class="btn-confirm" id="renameBtn" disabled>確定</button>
+  </div>
+
+  <!-- リネーム確認モーダル -->
+  <div class="modal-backdrop" id="modalBackdrop" hidden>
+    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="modalTitle">リネームの確認</div>
+          <div class="modal-sub" id="modalSub"></div>
+        </div>
+        <button class="modal-close" id="modalClose" aria-label="閉じる">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="modal-path">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8fa6d8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        <span id="modalDir"></span>
+      </div>
+
+      <div class="modal-warning" id="modalWarning" hidden>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#e0705f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20z"/><path d="M12 9v5M12 17.5v.5"/></svg>
+        <div>
+          <div class="warn-title" id="modalWarnTitle"></div>
+          <div class="warn-body">リネーム対象に含めていないファイルと同じ名前になります。開始番号を変更すると回避できます。</div>
+        </div>
+      </div>
+
+      <div class="modal-thead">
+        <div>変更前</div>
+        <div class="arrow-col"></div>
+        <div>変更後</div>
+      </div>
+
+      <div class="modal-list" id="modalList"></div>
+
+      <div class="modal-footer">
+        <div class="modal-start">
+          <label for="modalStart">開始番号</label>
+          <input type="text" id="modalStart">
+          <span id="modalStartHint">を変更して回避</span>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-cancel" id="modalCancel">キャンセル</button>
+          <button class="btn-confirm" id="modalApply">実行</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="app.js"></script>

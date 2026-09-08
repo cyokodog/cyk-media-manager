@@ -144,6 +144,63 @@ function applyRenamePlan(plan, fsImpl = fs) {
   return completed.map(p => ({ from: p.fromName, to: p.toName }))
 }
 
+// 単発リネーム。連番とは別に、任意の名前へ1件だけ変更する。
+// 衝突判定は buildRenamePlan と同じ規則（小文字化して比較）を使う。
+function checkSingleRename({ dir, from, to }) {
+  const absDir = path.resolve(dir)
+
+  if (!to.trim()) {
+    return { error: 'ファイル名を入力してください' }
+  }
+  // ディレクトリ外へ出る名前は受け付けない
+  if (to.includes('/') || to.includes('\\') || to.includes(path.sep)) {
+    return { error: 'ファイル名にパス区切り文字は使えません' }
+  }
+  if (to === '.' || to === '..' || path.basename(to) !== to) {
+    return { error: '不正なファイル名です' }
+  }
+
+  const fromPath = path.join(absDir, from)
+  const toPath = path.join(absDir, to)
+  if (!fs.existsSync(fromPath)) {
+    return { error: `ファイルが見つかりません: ${from}` }
+  }
+
+  // 自分自身への変更（大文字小文字だけの違いを含む）は衝突ではない
+  if (from.toLowerCase() !== to.toLowerCase()) {
+    const existing = fs.readdirSync(absDir).map(f => f.toLowerCase())
+    if (existing.includes(to.toLowerCase())) {
+      return { error: `同じ名前のファイルが既にあります: ${to}` }
+    }
+  }
+
+  return { plan: [{ fromName: from, toName: to, from: fromPath, to: toPath }] }
+}
+
+app.post('/api/rename/one', (req, res) => {
+  const { dir, from, to } = req.body
+  if (!dir || !from || typeof to !== 'string') {
+    return res.status(400).json({ error: 'dir, from, to は必須です' })
+  }
+  if (!fs.existsSync(path.resolve(dir))) {
+    return res.status(404).json({ error: 'Directory not found' })
+  }
+
+  const { error, plan } = checkSingleRename({ dir, from, to })
+  if (error) return res.status(409).json({ error })
+
+  if (plan[0].fromName === plan[0].toName) {
+    return res.json({ renamed: [], unchanged: true })
+  }
+
+  try {
+    const renamed = applyRenamePlan(plan)
+    res.json({ renamed })
+  } catch (err) {
+    res.status(500).json({ error: err.message, rolledBack: Boolean(err.rolledBack) })
+  }
+})
+
 app.post('/api/rename/plan', (req, res) => {
   const { dir, files, prefix } = req.body
   if (!dir || !Array.isArray(files) || !prefix) {
@@ -196,7 +253,7 @@ app.post('/api/rename', (req, res) => {
   }
 })
 
-module.exports = { buildRenamePlan, applyRenamePlan, clampInt }
+module.exports = { buildRenamePlan, applyRenamePlan, clampInt, checkSingleRename }
 
 // テストから require したときにサーバーを起動しないようにする
 if (require.main === module) {

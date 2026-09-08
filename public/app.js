@@ -256,7 +256,13 @@ function renderColumn(side) {
     const name = document.createElement('div')
     name.className = 'name'
     name.textContent = f.name
-    name.title = f.name
+    name.title = added ? f.name : `${f.name}（ダブルクリックで名前を変更）`
+    if (!added) {
+      name.addEventListener('dblclick', e => {
+        e.stopPropagation()
+        beginInlineRename(side, thumb, name, f.name)
+      })
+    }
     thumb.appendChild(name)
 
     if (showDate) {
@@ -374,7 +380,12 @@ function handleCenterClick(name, e) {
   // 中央列を触ったら左右列の選択は解除する
   state.selected.left.clear()
   state.selected.right.clear()
-  renderAll()
+
+  // 再描画すると DOM が差し替わるため、選択の見た目だけを更新する
+  centerBody.querySelectorAll('.thumb').forEach(el => {
+    el.classList.toggle('selected', sel.has(el.dataset.name))
+  })
+  syncSelectionClasses()
 }
 
 // ---------- 中央列内の並べ替え ----------
@@ -510,8 +521,19 @@ function handleThumbClick(side, name, e) {
   const other = side === 'left' ? 'right' : 'left'
   state.selected[other].clear()
 
-  renderColumn('left')
-  renderColumn('right')
+  // 選択の見た目だけを更新する。ここで再描画すると DOM が差し替わり、
+  // 1回目のクリックで要素が消えるためダブルクリックが成立しなくなる。
+  syncSelectionClasses()
+}
+
+// 選択状態を既存の DOM に反映する（要素は作り直さない）
+function syncSelectionClasses() {
+  for (const side of ['left', 'right']) {
+    const sel = state.selected[side]
+    columns[side].body.querySelectorAll('.thumb').forEach(el => {
+      el.classList.toggle('selected', sel.has(el.dataset.name))
+    })
+  }
 }
 
 // ---------- D&D ----------
@@ -664,6 +686,115 @@ function clearTarget() {
 
 // #5 および E2E から使う
 window.__cyk = { state, seq, addToTarget, removeFromTarget, clearTarget, reorderTarget, renderAll }
+
+// ---------- 個別リネーム（ダブルクリック） ----------
+//
+// 連番リネームとは別に、左右列で1件だけ任意の名前へ変える。
+// 拡張子は編集対象に含めず、確定時に元のものを付け直す。
+
+let editing = null   // 多重に開かないための番人
+
+function splitExt(fileName) {
+  const i = fileName.lastIndexOf('.')
+  return i > 0 ? [fileName.slice(0, i), fileName.slice(i)] : [fileName, '']
+}
+
+function beginInlineRename(side, thumb, nameEl, fileName) {
+  if (editing) return
+  const [base, ext] = splitExt(fileName)
+
+  const input = document.createElement('input')
+  input.type = 'text'
+  input.className = 'name-edit'
+  input.value = base
+  input.spellcheck = false
+  input.title = `拡張子 ${ext || '(なし)'} は変更されません`
+
+  editing = { side, thumb, nameEl, fileName, ext, input, done: false }
+
+  nameEl.replaceWith(input)
+  input.focus()
+  input.select()
+
+  input.addEventListener('keydown', e => {
+    e.stopPropagation()
+    if (e.key === 'Enter') { e.preventDefault(); commitInlineRename() }
+    else if (e.key === 'Escape') { e.preventDefault(); cancelInlineRename() }
+  })
+  input.addEventListener('blur', () => commitInlineRename())
+  // 編集中のクリックでサムネイルの選択が動かないようにする
+  input.addEventListener('click', e => e.stopPropagation())
+  input.addEventListener('dblclick', e => e.stopPropagation())
+}
+
+function endEditing() {
+  if (!editing) return
+  const { input, nameEl } = editing
+  editing = null
+  if (input.isConnected) input.replaceWith(nameEl)
+}
+
+function cancelInlineRename() {
+  if (!editing || editing.done) return
+  editing.done = true
+  endEditing()
+}
+
+async function commitInlineRename() {
+  if (!editing || editing.done) return
+  editing.done = true
+
+  const { side, fileName, ext, input } = editing
+  const next = input.value.trim()
+  const [base] = splitExt(fileName)
+
+  // 空、または変更なしなら何もしない
+  if (!next || next === base) {
+    endEditing()
+    return
+  }
+
+  const to = next + ext
+  input.disabled = true
+
+  try {
+    const res = await fetch('/api/rename/one', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dir: state.dir, from: fileName, to })
+    })
+    const data = await res.json()
+
+    if (!res.ok) {
+      endEditing()
+      showError(data.error || 'リネームに失敗しました')
+      return
+    }
+
+    endEditing()
+    await reloadAfterInlineRename(fileName, to)
+  } catch {
+    endEditing()
+    showError('リネームに失敗しました')
+  }
+}
+
+// 読み直して、中央列に入っていた場合は新しい名前へ差し替える
+async function reloadAfterInlineRename(fromName, toName) {
+  thumbGeneration++
+  const res = await fetch(`/api/images?dir=${encodeURIComponent(state.dir)}`)
+  const data = await res.json()
+  if (!res.ok) return showError(data.error || '読み込みに失敗しました')
+
+  state.files = data.files
+  state.targetOrder = state.targetOrder.map(n => (n === fromName ? toName : n))
+  for (const key of ['left', 'right', 'center']) {
+    if (state.selected[key].delete(fromName)) state.selected[key].add(toName)
+  }
+  renderAll()
+  syncFooter()
+  clearError()
+}
 
 // ---------- フッター ----------
 

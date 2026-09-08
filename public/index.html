@@ -286,9 +286,28 @@
     }
     .thumb .name + .date { padding: 0 5px 4px; font-size: 9px; color: #7d7d7d; }
 
+    /* 個別リネームの入力欄 */
+
+    .name-edit {
+      display: block;
+      width: 100%;
+      padding: 3px 5px;
+      background: var(--input);
+      border: none;
+      outline: 1px solid var(--accent);
+      outline-offset: -1px;
+      border-radius: 0 0 4px 4px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 9px;
+      min-width: 0;
+    }
+    .name-edit:disabled { color: var(--text-4); }
+
     /* 左右列のサムネイルの状態 */
 
     .col-source .thumb { cursor: grab; }
+    .col-source .thumb:has(.name-edit) { cursor: default; }
     .col-source .thumb:active { cursor: grabbing; }
 
     .thumb.selected { border-color: var(--accent); background: var(--selected-bg); }

@@ -241,7 +241,7 @@ function renderColumn(side) {
     thumb.draggable = !added
 
     const img = document.createElement('img')
-    img.src = `/api/thumbnail?path=${encodeURIComponent(f.path)}`
+    img.src = thumbUrl(f)
     img.loading = 'lazy'
     img.alt = ''
     thumb.appendChild(img)
@@ -324,7 +324,7 @@ function renderCenter() {
     thumb.appendChild(remove)
 
     const img = document.createElement('img')
-    img.src = `/api/thumbnail?path=${encodeURIComponent(f.path)}`
+    img.src = thumbUrl(f)
     img.loading = 'lazy'
     img.alt = ''
 
@@ -703,6 +703,13 @@ function syncFooter() {
   previewBtn.disabled = !ready
 }
 
+// リネームのたびに増やす。同じパスでも別のURLになるためキャッシュが効かない
+let thumbGeneration = 0
+
+function thumbUrl(file) {
+  return `/api/thumbnail?path=${encodeURIComponent(file.path)}&v=${thumbGeneration}`
+}
+
 // 拡張子はサーバー側と同じく小文字化する
 function extOf(name) {
   const i = name.lastIndexOf('.')
@@ -852,7 +859,8 @@ async function applyRename() {
       return
     }
 
-    // 新しい名前のまま並び順を保つ
+    // 新しい名前のまま並び順を保つ。
+    // data.renamed は計画順（＝中央列の並び順）で返るので、その to をそのまま使う。
     const newOrder = data.renamed.map(r => r.to)
     closeModal()
     await reloadAfterRename(newOrder)
@@ -868,6 +876,7 @@ async function applyRename() {
 
 // リネーム後はパスが変わるので読み直し、中央列は新しい名前で復元する
 async function reloadAfterRename(newOrder) {
+  thumbGeneration++   // 同じパスに別の画像が入るため、URLを変えて再取得させる
   const res = await fetch(`/api/images?dir=${encodeURIComponent(state.dir)}`)
   const data = await res.json()
   if (!res.ok) return showError(data.error || '読み込みに失敗しました')

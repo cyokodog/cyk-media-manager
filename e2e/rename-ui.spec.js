@@ -14,6 +14,42 @@ function makeDir(names) {
 }
 const ls = dir => fs.readdirSync(dir).sort()
 
+// 1x1 の単色 PNG を作る（サムネイルの中身を見分けるため）
+function solidPng(rgb) {
+  const zlib = require('zlib')
+  const ct = []
+  for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; ct[n] = c >>> 0 }
+  const chunk = (t, d) => {
+    const l = Buffer.alloc(4); l.writeUInt32BE(d.length)
+    const td = Buffer.concat([Buffer.from(t), d])
+    let c = 0xFFFFFFFF
+    for (const b of td) c = ct[(c ^ b) & 0xFF] ^ (c >>> 8)
+    const cb = Buffer.alloc(4); cb.writeUInt32BE((c ^ 0xFFFFFFFF) >>> 0)
+    return Buffer.concat([l, td, cb])
+  }
+  const ihdr = Buffer.alloc(13); ihdr.writeUInt32BE(1, 0); ihdr.writeUInt32BE(1, 4); ihdr[8] = 8; ihdr[9] = 6
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]),
+    chunk('IHDR', ihdr), chunk('IDAT', zlib.deflateSync(Buffer.from([0, ...rgb, 255]))), chunk('IEND', Buffer.alloc(0))
+  ])
+}
+
+// img が実際に描画しているピクセルの色を読む
+async function thumbColors(page, selector) {
+  return page.locator(selector).evaluateAll(imgs => imgs.map(img => {
+    const c = document.createElement('canvas')
+    c.width = c.height = 1
+    const ctx = c.getContext('2d')
+    ctx.drawImage(img, 0, 0, 1, 1)
+    const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data
+    if (r > 150 && g < 100) return '赤'
+    if (g > 150 && r < 100) return '緑'
+    if (b > 150 && r < 100) return '青'
+    return `?(${r},${g},${b})`
+  }))
+}
+
+
 async function loadDir(page, dir) {
   await page.goto('/')
   await page.evaluate(() => localStorage.clear())
@@ -193,4 +229,31 @@ test('スクリーンショット（プレビュー・衝突）', async ({ page 
   await expect(page.locator('#modalWarning')).toBeVisible()
   await page.waitForTimeout(200)
   await page.screenshot({ path: 'e2e/__screenshots__/preview-collision.png' })
+})
+
+test('リネーム後にサムネイルが新しい画像に差し替わる', async ({ page }) => {
+  // 同じパスに別の画像が入るため、キャッシュが効くと古いサムネイルが残る
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cyk-thumb-'))
+  fs.writeFileSync(path.join(dir, 'b_0010.png'), solidPng([220, 60, 60]))   // 赤
+  fs.writeFileSync(path.join(dir, 'b_0020.png'), solidPng([60, 200, 90]))   // 緑
+  fs.writeFileSync(path.join(dir, 'b_0030.png'), solidPng([70, 110, 230]))  // 青
+
+  await loadDir(page, dir)
+  // 青を先頭にして投入する
+  await addAll(page, ['b_0030.png', 'b_0010.png', 'b_0020.png'])
+  await page.waitForTimeout(200)
+  expect(await thumbColors(page, '#centerBody .thumb img')).toEqual(['青', '赤', '緑'])
+
+  await page.fill('#prefixInput', 'b')
+  await page.click('#previewBtn')
+  await expect(page.locator('.modal-row')).toHaveCount(3)
+  await page.click('#modalApply')
+  await expect(page.locator('#modalBackdrop')).toBeHidden()
+  await expect(page.locator('#centerBody .thumb .name').first()).toHaveText('b_0010.png')
+  await page.waitForTimeout(300)
+
+  // 名前は昇順になるが、画像は並べ替えた順のまま
+  expect(await page.locator('#centerBody .thumb .name').allTextContents())
+    .toEqual(['b_0010.png', 'b_0020.png', 'b_0030.png'])
+  expect(await thumbColors(page, '#centerBody .thumb img')).toEqual(['青', '赤', '緑'])
 })

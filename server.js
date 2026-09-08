@@ -50,7 +50,10 @@ app.get('/api/images', (req, res) => {
 app.get('/api/thumbnail', (req, res) => {
   const filePath = req.query.path
   if (!filePath || !fs.existsSync(filePath)) return res.status(404).send('Not found')
-  res.sendFile(filePath)
+  // リネームすると同じパスに別の画像が入る。ブラウザが古い画像を再利用しないよう
+  // キャッシュを無効にする（ローカル専用ツールなので転送量は問題にならない）
+  res.setHeader('Cache-Control', 'no-store, must-revalidate')
+  res.sendFile(filePath, { etag: false, lastModified: false })
 })
 
 // リネーム計画を組み立てる。実行はしない。
